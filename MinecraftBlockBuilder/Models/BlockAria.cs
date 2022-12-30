@@ -1,91 +1,220 @@
 ﻿using MinecraftBlockBuilder.Graphics;
-using SkiaSharp.Views.WPF;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinecraftBlockBuilder.Models
 {
     internal class BlockAria
     {
         private static readonly int blockSize = 16;
-        private readonly int width;
-        private readonly int height;
-        private readonly int depth;
+        public int Width { get; }
+        public int Height { get; }
+        public int Depth { get; }
+
+        private ushort currentX = 0;
+        private ushort currentY = 0;
+        private ushort currentZ = 0;
+
 
         private IList<ushort[]> aria;
         public BlockAria(int width, int height, int depth)
         {
-            this.width = width;
-            this.height = height;
-            this.depth = depth;
-            aria = Enumerable.Repeat(Enumerable.Repeat<ushort>(0, width * depth).ToArray(), height).ToList();
+            Width = width;
+            Height = height;
+            Depth = depth;
+            aria = Enumerable.Range(0, height).Select(_ => Enumerable.Repeat<ushort>(0, width * depth).ToArray()).ToList();
+        }
+
+        public void SetBlock(ushort value)
+        {
+            SetBlock(currentX, currentY, currentZ, value);
         }
 
         public void SetBlock(int x, int y, int z, ushort value)
         {
-            aria[y][z * width + x] = value;
+            aria[y][z * Width + x] = GetBlock(x, y, z) == value ? (ushort)0 : value;
         }
 
-        public ushort GetBlock(int x, int y, int z) => aria[y][z * width + x];
+        public ushort GetBlock(int x, int y, int z) => aria[y][z * Width + x];
 
-        public void PaintZX(IGraphics g, int currentX, int currentY, int currentZ)
+        public void PaintXZ(IGraphics g)
         {
-            DrawImageZX(g, currentY);
-            DrawGridLineV(g, width, depth, currentX);
-            DrawGridLineH(g, width, depth, currentZ);
+            DrawGridLine(g, Width, Depth);
+            DrawImageXZ(g, currentY);
+            DrawCurrentLine(g, Width, Depth, currentX, currentZ);
         }
 
-        private void DrawImageZX(IGraphics g, int y)
+        public void PaintXY(IGraphics g)
         {
-            for (int z = 0; z < depth; z++)
+            DrawGridLine(g, Width, Height);
+            DrawImageXY(g, currentZ);
+            DrawCurrentLine(g, Width, Height, currentX, currentY);
+        }
+
+        public void PaintZY(IGraphics g)
+        {
+            DrawGridLine(g, Depth, Height);
+            DrawImageZY(g, currentX);
+            DrawCurrentLine(g, Depth, Height, currentZ, currentY);
+        }
+
+        public void IncrementX(Action? afterAction=null)
+        {
+            if (currentX < Width - 1)
             {
-                for (int x = 0; x < width; x++)
+                currentX++;
+                afterAction?.Invoke();
+            }
+        }
+
+        public void DecrementX(Action? afterAction = null)
+        {
+            if (currentX > 0)
+            {
+                currentX--;
+                afterAction?.Invoke();
+
+            }
+        }
+
+        public void IncrementY(Action? afterAction = null)
+        {
+            if (currentY < Height - 1)
+            {
+                currentY++;
+                afterAction?.Invoke();
+            }
+        }
+
+        public void DecrementY(Action? afterAction = null)
+        {
+            if (currentY > 0)
+            {
+                currentY--;
+                afterAction?.Invoke();
+            }
+        }
+
+        public void IncrementZ(Action? afterAction = null)
+        {
+            if (currentZ < Depth - 1)
+            {
+                currentZ++;
+                afterAction?.Invoke();
+            }
+        }
+
+        public void DecrementZ(Action? afterAction = null)
+        {
+            if (currentZ > 0)
+            {
+                currentZ--;
+                afterAction?.Invoke();
+            }
+        }
+ 
+        private void DrawImageXZ(IGraphics g, int y)
+        {
+            for (int z = 0; z < Depth; z++)
+            {
+                for (int x = 0; x < Width; x++)
                 {
                     var block = GetBlock(x, y, z);
                     if (block != 0)
                     {
-                        
+                        g.DrawImage(
+                            new Rectangle(
+                                x * blockSize,
+                                (Depth - 1 - z) * blockSize,
+                                blockSize,
+
+                                blockSize),
+                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
                     }
                 }
             }
         }
 
-        private static void DrawGridLineV(IGraphics g, int w, int h, int current)
+        private void DrawImageXY(IGraphics g, int z)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    var block = GetBlock(x, y, z);
+                    if (block != 0)
+                    {
+                        g.DrawImage(
+                            new Rectangle(
+                                x * blockSize,
+                                (Height - 1 - y) * blockSize,
+                                blockSize,
+                                blockSize),
+                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
+                    }
+                }
+            }
+        }
+
+        private void DrawImageZY(IGraphics g, int x)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int z = 0; z < Width; z++)
+                {
+                    var block = GetBlock(x, y, z);
+                    if (block != 0)
+                    {
+                        g.DrawImage(
+                            new Rectangle(
+                                z * blockSize,
+                                (Height - 1 - y) * blockSize,
+                                blockSize,
+                                blockSize),
+                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
+                    }
+                }
+            }
+        }
+
+        private static void DrawGridLine(IGraphics g, int w, int h)
         {
             for (int x = 0; x < w; x++)
             {
-                var stroke = x == current ? new Stroke(Color.LightBlue, 4) : new Stroke(Color.DarkGray, 1);
-
                 g.DrawLine(
                     new Point(x * blockSize, 0),
                     new Point(x * blockSize, h * blockSize),
-                    stroke);
-                g.DrawLine(
-                    new Point(x * blockSize + (blockSize - 1), 0),
-                    new Point(x * blockSize + (blockSize - 1), h * blockSize),
-                    stroke);
+                    new Stroke(Color.DarkGray, 1));
             }
-        }
-        private static void DrawGridLineH(IGraphics g, int w, int h, int current)
-        {
             for (int y = 0; y < h; y++)
             {
-                var stroke = y == current ? new Stroke(Color.LightBlue, 4) : new Stroke(Color.DarkGray, 1);
-
                 g.DrawLine(
                     new Point(0, y * blockSize),
                     new Point(w * blockSize, y * blockSize),
-                    stroke);
-                g.DrawLine(
-                    new Point(0, y * blockSize + (blockSize - 1)),
-                    new Point(w * blockSize, y * blockSize + (blockSize - 1)),
-                    stroke);
+                    new Stroke(Color.DarkGray, 1));
             }
+        }
+
+        private static void DrawCurrentLine(IGraphics g, int w, int h, int cX, int cY)
+        {
+            g.DrawLine(
+                    new Point(cX * blockSize, 0),
+                    new Point(cX * blockSize, h * blockSize),
+                    new Stroke(Color.Blue, 2));
+            g.DrawLine(
+                new Point(cX * blockSize + blockSize, 0),
+                new Point(cX * blockSize + blockSize, h * blockSize),
+                new Stroke(Color.Blue, 2));
+
+            g.DrawLine(
+                    new Point(0, (h - 1 - cY) * blockSize),
+                    new Point(w * blockSize, (h - 1 - cY) * blockSize),
+                    new Stroke(Color.Blue, 2));
+            g.DrawLine(
+                new Point(0, (h - 1 - cY) * blockSize + blockSize),
+                new Point(w * blockSize, (h - 1 - cY) * blockSize + blockSize),
+                new Stroke(Color.Blue, 2));
         }
     }
 }

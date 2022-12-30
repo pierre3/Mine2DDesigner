@@ -1,63 +1,101 @@
-﻿<Window x:Class="MinecraftBlockBuilder.MainWindow"
+﻿<Window x:Class="MinecraftBlockBuilder.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MinecraftBlockBuilder"
+        xmlns:vm="clr-namespace:MinecraftBlockBuilder.ViewModels"
+        xmlns:bind="clr-namespace:MinecraftBlockBuilder.Bindings"
         xmlns:sk="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1024" Width="1024">
+        Title="Minecraft Block Builder" Height="1024" Width="1024">
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <bind:PlaneTypeToBorderBrushConverter x:Key="borderBrushConverter"/>
+    </Window.Resources>
+    <behaviors:Interaction.Triggers>
+        <behaviors:EventTrigger EventName="PreviewKeyDown">
+            <rp:EventToReactiveCommand Command="{Binding KeyDownCommand}">
+                <bind:KeyDownReactiveConverter/>
+            </rp:EventToReactiveCommand>
+        </behaviors:EventTrigger>
+    </behaviors:Interaction.Triggers>
+
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="50*"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="50*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="50*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="50*"/>
         </Grid.ColumnDefinitions>
-        <ToolBar Grid.ColumnSpan="2">
-            <Button FontFamily="Segoe MDL2 Assets" FontSize="24">
-                &#xE78B;
-            </Button>
-        </ToolBar>
-        
-        <ScrollViewer Grid.Row="1" Grid.Column="0"
+
+        <GridSplitter Grid.Row="1" Grid.ColumnSpan="3" Height="4"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Center"
+                          ShowsPreview="true"
+                          Background="DarkSlateGray"></GridSplitter>
+        <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="4" 
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          ShowsPreview="true"
+                          Background="DarkSlateGray"></GridSplitter>
+        <Border Grid.Row="0" Grid.Column="0" 
+                    BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=XZ}"
+                    BorderThickness="2">
+            <ScrollViewer 
+                          HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
+                          Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+                <sk:SKElement
+                          x:Name="skElementXZ"
+                          Margin="8" Width="400" Height="400" 
+                          HorizontalAlignment="Left" VerticalAlignment="Top" 
+                          PaintSurface="SKElement_PaintSurfaceXZ">
+                    <sk:SKElement.LayoutTransform>
+                        <ScaleTransform ScaleX="{Binding ScaleXZ.Value}" ScaleY="{Binding ScaleXZ.Value}"/>
+                    </sk:SKElement.LayoutTransform>
+                </sk:SKElement>
+            </ScrollViewer>
+        </Border>
+        <Border Grid.Row="2" Grid.Column="0"
+                    BorderThickness="2"
+                    BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=XY}">
+            <ScrollViewer 
                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
                       Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <sk:SKElement  
-                      Margin="8" Width="400" Height="400" 
+                <sk:SKElement
+                      x:Name="skElementXY"
+                      Margin="8" Width="400" Height="800" 
                       HorizontalAlignment="Left" VerticalAlignment="Top" 
-                      PaintSurface="SKElement_PaintSurface">
-                <sk:SKElement.LayoutTransform>
-                    <ScaleTransform ScaleX="1.5" ScaleY="1.5"/>
-                </sk:SKElement.LayoutTransform>
-            </sk:SKElement>
-        </ScrollViewer>
-        <ScrollViewer Grid.Row="1" Grid.Column="1"
+                      PaintSurface="SKElement_PaintSurfaceXY">
+                    <sk:SKElement.LayoutTransform>
+                        <ScaleTransform ScaleX="{Binding ScaleXY.Value}" ScaleY="{Binding ScaleXY.Value}"/>
+                    </sk:SKElement.LayoutTransform>
+                </sk:SKElement>
+            </ScrollViewer>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="2"
+                    BorderThickness="2"
+                    BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=ZY}">
+            <ScrollViewer 
                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
                       Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <sk:SKElement  
-                      Margin="8" Width="400" Height="400" 
+                <sk:SKElement
+                      x:Name="skElementZY"
+                      Margin="8" Width="400" Height="800" 
                       HorizontalAlignment="Left" VerticalAlignment="Top" 
-                      PaintSurface="SKElement_PaintSurface">
-                <sk:SKElement.LayoutTransform>
-                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
-                </sk:SKElement.LayoutTransform>
-            </sk:SKElement>
-        </ScrollViewer>
-        <ScrollViewer Grid.Row="2" Grid.Column="0"
-                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
-                      Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <sk:SKElement  
-                      Margin="8" Width="400" Height="400" 
-                      HorizontalAlignment="Left" VerticalAlignment="Top" 
-                      PaintSurface="SKElement_PaintSurface">
-                <sk:SKElement.LayoutTransform>
-                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
-                </sk:SKElement.LayoutTransform>
-            </sk:SKElement>
-        </ScrollViewer>
+                      PaintSurface="SKElement_PaintSurfaceZY">
+                    <sk:SKElement.LayoutTransform>
+                        <ScaleTransform ScaleX="{Binding ScaleZY.Value}" ScaleY="{Binding ScaleZY.Value}"/>
+                    </sk:SKElement.LayoutTransform>
+                </sk:SKElement>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Window>

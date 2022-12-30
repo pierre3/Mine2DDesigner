@@ -1,5 +1,6 @@
 ﻿using MinecraftBlockBuilder.Graphics;
 using SkiaSharp;
+using System.IO;
 
 namespace MinecraftBlockBuilder.Models
 {
@@ -49,6 +50,13 @@ namespace MinecraftBlockBuilder.Models
         {
             using var paint = new SKPaint().SetStroke(stroke);
             Canvas.DrawLine(p1.ToSk(ScaleX, ScaleY), p2.ToSk(ScaleX, ScaleY), paint);
+        }
+
+        public void DrawImage(Rectangle rect, byte[] bytes)
+        {
+            var bitmap = SKBitmap.Decode(bytes);
+            var image = SKImage.FromBitmap(bitmap);
+            Canvas.DrawImage(image, rect.ToSk(ScaleX, ScaleY));
         }
     }
 }

@@ -1,4 +1,9 @@
 ﻿using Microsoft.VisualBasic;
+using MinecraftBlockBuilder.Models;
+using SkiaSharp;
+using System.IO;
+using System.Security.Cryptography;
+using System.Windows.Controls;
 
 namespace MinecraftBlockBuilder.Graphics
 {
@@ -12,7 +17,6 @@ namespace MinecraftBlockBuilder.Graphics
         void DrawOval(Rectangle rectangle, Stroke stroke);
         void FillOval(Rectangle rectangle, Fill fill);
         void DrawLine(Point p1, Point p2, Stroke stroke);
-        
-
+        void DrawImage(Rectangle rect, byte[] bytes);
     }
 }

@@ -1,4 +1,7 @@
-﻿using SkiaSharp;
+﻿using MinecraftBlockBuilder.Models;
+using MinecraftBlockBuilder.ViewModels;
+using SkiaSharp;
+using SkiaSharp.Views.Desktop;
 using SkiaSharp.Views.WPF;
 using System;
 using System.Collections.Generic;
@@ -15,54 +18,63 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MinecraftBlockBuilder
+namespace MinecraftBlockBuilder.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private IPaintPlane? PaintPlane { get => DataContext as IPaintPlane; }
         public MainWindow()
         {
             InitializeComponent();
+
+            if (PaintPlane is not null)
+            {
+                PaintPlane.UpdateSuface += () =>
+                {
+                    skElementXZ.InvalidateVisual();
+                    skElementXY.InvalidateVisual();
+                    skElementZY.InvalidateVisual();
+                };
+            }
         }
 
-        private void SKElement_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs e)
+        private void SKElement_PaintSurfaceXZ(object sender, SKPaintSurfaceEventArgs e)
         {
-            e.Surface.Canvas.DrawRect(e.Info.Rect, new SKPaint() { Style = SKPaintStyle.Fill, Color = SKColors.Ivory });
-            var skElement = (sender as SKElement)!;
-            var dpi = VisualTreeHelper.GetDpi(skElement);
+            ClearCanvas(e);
+            var g = GetGraphics((Visual)sender, e.Surface.Canvas);
+            PaintPlane?.PaintXZ(g);
+        }
 
-            var currentX = 10;
-            var currentY = 10;
+        private void SKElement_PaintSurfaceXY(object sender, SKPaintSurfaceEventArgs e)
+        {
+            ClearCanvas(e);
+            var g = GetGraphics((Visual)sender, e.Surface.Canvas);
+            PaintPlane?.PaintXY(g);
+        }
 
-            for (int y = 0; y < skElement.Height / 16; y++)
+        private void SKElement_PaintSurfaceZY(object sender, SKPaintSurfaceEventArgs e)
+        {
+            ClearCanvas(e);
+            var g = GetGraphics((Visual)sender, e.Surface.Canvas);
+            PaintPlane?.PaintZY(g);
+        }
+
+        private static SkiaGraphics GetGraphics(Visual sender, SKCanvas canvas)
+        {
+            var dpi = VisualTreeHelper.GetDpi(sender);
+            return new SkiaGraphics(canvas, (float)dpi.DpiScaleX, (float)dpi.DpiScaleY);
+        }
+
+        private static void ClearCanvas(SKPaintSurfaceEventArgs e)
+        {
+            e.Surface.Canvas.DrawRect(e.Info.Rect, new SKPaint()
             {
-                var color = y == currentY ? SKColors.LightBlue : SKColors.LightGray;
-                var width = y == currentY ? 4 : 1;
-
-                e.Surface.Canvas.DrawLine(
-                    new SKPoint(0, (float)(y * 16 * dpi.DpiScaleY)),
-                    new SKPoint((float)(e.Info.Width * dpi.DpiScaleX), (float)(y * 16 * dpi.DpiScaleY)),
-                    new SKPaint() { Color = color, StrokeWidth = width });
-                e.Surface.Canvas.DrawLine(
-                    new SKPoint(0, (float)((y * 16 + 15) * dpi.DpiScaleY)),
-                    new SKPoint((float)(e.Info.Width * dpi.DpiScaleX), (float)((y * 16 + 15) * dpi.DpiScaleY)),
-                    new SKPaint() { Color = color, StrokeWidth = width });
-            }
-            for (int x = 0; x < skElement.Width / 16; x++)
-            {
-                var color = x == currentX ? SKColors.LightBlue : SKColors.LightGray;
-                var width = x == currentX ? 4 : 1;
-                e.Surface.Canvas.DrawLine(
-                    new SKPoint((float)(x * 16 * dpi.DpiScaleX), 0),
-                    new SKPoint((float)(x * 16 * dpi.DpiScaleX), (float)(e.Info.Height * dpi.DpiScaleY)),
-                    new SKPaint() { Color = color, StrokeWidth = width });
-                e.Surface.Canvas.DrawLine(
-                    new SKPoint((float)((x * 16 + 15) * dpi.DpiScaleX), 0),
-                    new SKPoint((float)((x * 16 + 15) * dpi.DpiScaleX), (float)(e.Info.Height * dpi.DpiScaleY)),
-                    new SKPaint() { Color = color, StrokeWidth = width });
-            }
+                Style = SKPaintStyle.Fill,
+                Color = SKColors.Ivory
+            });
         }
     }
 }

@@ -13,4 +13,10 @@
     <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="assets\block\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
