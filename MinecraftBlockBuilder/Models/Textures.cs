@@ -3,16 +3,16 @@ using System.IO;
 
 namespace MinecraftBlockBuilder.Models
 {
-    internal record class Textures
+    internal class Textures
     {
         public string Top { get; init; }
         public string Side { get; init; }
 
         public Textures(string name)
         {
-            var fileName = Path.Combine("assets", "block", name + ".png");
-            var topFileName = Path.Combine("assets", "block", name + "_top.png");
-            var sideFileName = Path.Combine("assets", "block", name + "_side.png");
+            var fileName = Path.GetFullPath(Path.Combine("assets", "block", name + ".png"));
+            var topFileName = Path.GetFullPath(Path.Combine("assets", "block", name + "_top.png"));
+            var sideFileName = Path.GetFullPath(Path.Combine("assets", "block", name + "_side.png"));
 
             if (File.Exists(topFileName) && File.Exists(sideFileName))
             {

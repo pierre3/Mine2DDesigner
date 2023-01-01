@@ -128,7 +128,6 @@ namespace MinecraftBlockBuilder.Models
                                 x * blockSize,
                                 (Depth - 1 - z) * blockSize,
                                 blockSize,
-
                                 blockSize),
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
                     }
@@ -151,7 +150,7 @@ namespace MinecraftBlockBuilder.Models
                                 (Height - 1 - y) * blockSize,
                                 blockSize,
                                 blockSize),
-                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
+                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
                     }
                 }
             }
@@ -172,7 +171,7 @@ namespace MinecraftBlockBuilder.Models
                                 (Height - 1 - y) * blockSize,
                                 blockSize,
                                 blockSize),
-                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
+                            Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
                     }
                 }
             }

@@ -4,6 +4,7 @@ using MinecraftBlockBuilder.Models;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -24,6 +25,23 @@ namespace MinecraftBlockBuilder.ViewModels
         public ReactivePropertySlim<double> ScaleZY { get; } = new(1.0);
         public ReactivePropertySlim<double> ScaleXY { get; } = new(1.0);
 
+        public ReactiveProperty<Block> SelectedBlock { get; }
+
+        public ObservableCollection<Block> toolBoxItems { get; } = new()
+        {
+            Block.Definitions[1],
+            Block.Definitions[2],
+            Block.Definitions[3],
+            Block.Definitions[4],
+            Block.Definitions[5],
+            Block.Definitions[6],
+            Block.Definitions[7],
+            Block.Definitions[8],
+            Block.Definitions[9],
+            Block.Definitions[10]
+        };
+
+        public ReadOnlyReactiveCollection<Block> ToolBoxItems { get; }
         private void RaiseUpdateSuface()
         {
             UpdateSuface?.Invoke();
@@ -34,6 +52,11 @@ namespace MinecraftBlockBuilder.ViewModels
 
         public MainWindowViewModel()
         {
+            ToolBoxItems = toolBoxItems
+                .ToReadOnlyReactiveCollection()
+                .AddTo(disposables);
+            SelectedBlock = new (toolBoxItems[0]);
+            SelectedBlock.Subscribe(b => System.Diagnostics.Debug.WriteLine(b.Name));
             KeyDownCommand = new ReactiveCommand<KeyEvent>();
             InitKeyDownCommands();
         }
@@ -44,7 +67,7 @@ namespace MinecraftBlockBuilder.ViewModels
             {
                 if (e.IsPressedSpace)
                 {
-                    blockAria.SetBlock(1);
+                    blockAria.SetBlock(SelectedBlock.Value.Index);
                 }
                 RaiseUpdateSuface();
             };
@@ -162,7 +185,8 @@ namespace MinecraftBlockBuilder.ViewModels
                 .Where(e => e.KeyType == KeyType.Space)
                 .Subscribe(_ =>
                 {
-                    blockAria.SetBlock(1);
+                    System.Diagnostics.Debug.WriteLine(SelectedBlock.Value.Name);
+                    blockAria.SetBlock(SelectedBlock.Value.Index);
                     RaiseUpdateSuface();
                 })
                 .AddTo(disposables);
