@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MinecraftBlockBuilder.Models
 {
-    internal class BlockAria
+    public class BlockAria
     {
         private static readonly int blockSize = 16;
         public int Width { get; }

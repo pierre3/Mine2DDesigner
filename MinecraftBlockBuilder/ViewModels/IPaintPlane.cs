@@ -3,7 +3,7 @@ using System;
 
 namespace MinecraftBlockBuilder.ViewModels
 {
-    interface IPaintPlane
+    public interface IPaintPlane
     {
         event Action UpdateSuface;
         void PaintXZ(IGraphics g);
@@ -11,12 +11,5 @@ namespace MinecraftBlockBuilder.ViewModels
         void PaintXY(IGraphics g);
 
         void PaintZY(IGraphics g);
-    }
-
-    enum PlaneType
-    {
-        XZ,
-        ZY,
-        XY
     }
 }

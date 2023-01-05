@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace MinecraftBlockBuilder.Models
 {
-    internal class Block
+    public class Block
     {
         public static IReadOnlyList<Block> Definitions { get; }
 

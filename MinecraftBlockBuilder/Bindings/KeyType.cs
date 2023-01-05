@@ -1,6 +1,6 @@
 ﻿namespace MinecraftBlockBuilder.Bindings
 {
-    enum KeyType
+    public enum KeyType
     {
         None,
         Left,

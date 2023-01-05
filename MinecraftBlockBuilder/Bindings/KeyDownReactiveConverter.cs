@@ -9,11 +9,11 @@ using System.Windows.Input;
 
 namespace MinecraftBlockBuilder.Bindings
 {
-    class KeyDownReactiveConverter : ReactiveConverter<KeyEventArgs, KeyEvent>
+    public class KeyDownReactiveConverter : ReactiveConverter<KeyEventArgs, KeyEvent>
     {
         protected override IObservable<KeyEvent?> OnConvert(IObservable<KeyEventArgs?> source)
         {
-            return source.Where(e => e?.IsDown == true).Select(e =>
+            return source.Where(e =>  e?.IsDown == true).Select(e =>
             {
                 var keyEvent = new KeyEvent()
                 {

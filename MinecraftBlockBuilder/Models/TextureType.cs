@@ -1,6 +1,6 @@
 ﻿namespace MinecraftBlockBuilder.Models
 {
-    internal enum TextureType
+    public enum TextureType
     {
         Top,
         Side

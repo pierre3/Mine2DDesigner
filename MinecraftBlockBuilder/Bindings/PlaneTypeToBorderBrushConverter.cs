@@ -14,7 +14,7 @@ using System.Windows.Media;
 namespace MinecraftBlockBuilder.Bindings
 {
     [ValueConversion(typeof(PlaneType), typeof(Brush))]
-    class PlaneTypeToBorderBrushConverter : IValueConverter
+    public class PlaneTypeToBorderBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

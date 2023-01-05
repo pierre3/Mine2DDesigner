@@ -1,6 +1,10 @@
 ﻿using MinecraftBlockBuilder.Bindings;
 using MinecraftBlockBuilder.Graphics;
 using MinecraftBlockBuilder.Models;
+using MinecraftBlockBuilder.Services;
+using MinecraftBlockBuilder.Views;
+using MinecraftConnection;
+using MinecraftConnection.RCON;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -8,12 +12,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace MinecraftBlockBuilder.ViewModels
 {
-    internal class MainWindowViewModel : IPaintPlane, INotifyPropertyChanged, IDisposable
+    public class MainWindowViewModel : Services.IServiceProvider, IPaintPlane, INotifyPropertyChanged, IDisposable
     {
-        private readonly BlockAria blockAria = new(25, 50, 25);
+        private readonly BlockAria blockAria = new(25, 25, 25);
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -25,7 +30,15 @@ namespace MinecraftBlockBuilder.ViewModels
         public ReactivePropertySlim<double> ScaleZY { get; } = new(1.0);
         public ReactivePropertySlim<double> ScaleXY { get; } = new(1.0);
 
-        public ReactiveProperty<Block> SelectedBlock { get; }
+        public ReactivePropertySlim<string> RconServer { get; } = new("localhost");
+        public ReactivePropertySlim<ushort> RconPort { get; } = new(25575);
+        public ReactivePropertySlim<string> RconPassword { get; } = new("minecraft");
+        public ReactivePropertySlim<string> PlayerId { get; } = new("bacon_king112");
+        public ReactivePropertySlim<bool> LevelingOfGround { get; } = new(true);
+
+        public AsyncReactiveCommand SendBlocksCommand { get; }
+
+        public ReactivePropertySlim<Block> SelectedBlock { get; }
 
         public ObservableCollection<Block> toolBoxItems { get; } = new()
         {
@@ -48,17 +61,76 @@ namespace MinecraftBlockBuilder.ViewModels
         }
 
         public ReactiveCommand<KeyEvent> KeyDownCommand { get; set; }
+        public ReactiveCommand SelectBlockCommand { get; set; }
 
+        public ServiceCollection Services { get; } = new();
 
         public MainWindowViewModel()
         {
             ToolBoxItems = toolBoxItems
                 .ToReadOnlyReactiveCollection()
                 .AddTo(disposables);
-            SelectedBlock = new (toolBoxItems[0]);
-            SelectedBlock.Subscribe(b => System.Diagnostics.Debug.WriteLine(b.Name));
+            SelectedBlock = new(toolBoxItems[0]);
+            SelectedBlock
+                .Pairwise()
+                .Subscribe(p =>
+                {
+                    if (p.NewItem is null)
+                    {
+                        SelectedBlock.Value = p.OldItem;
+                    }
+                });
+
             KeyDownCommand = new ReactiveCommand<KeyEvent>();
             InitKeyDownCommands();
+            SelectBlockCommand = new ReactiveCommand()
+                .WithSubscribe(() =>
+                {
+                    var dialog = Services.Get<SelectBlockWindowService>();
+                    var vm = new SelectBlockWindowViewModel(SelectedBlock.Value);
+                    var blockIndex = toolBoxItems.IndexOf(SelectedBlock.Value);
+                    if (blockIndex >= 0 && dialog?.ShowDialog(vm) == true)
+                    {
+                        toolBoxItems[blockIndex] = vm.SelectedBlock.Value;
+                        SelectedBlock.Value = vm.SelectedBlock.Value;
+                    }
+                });
+
+            SendBlocksCommand = new AsyncReactiveCommand().WithSubscribe(
+                async () =>
+                {
+                    await Task.Run(() =>
+                    {
+                        var minecraft = new MinecraftCommands(RconServer.Value, RconPort.Value, RconPassword.Value);
+                        var x0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.X;
+                        var y0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Y;
+                        var z0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Z;
+
+                        if (LevelingOfGround.Value)
+                        {
+                            minecraft.SendCommand($"fill {x0} {y0} {z0} {x0 + blockAria.Width - 1} {y0 + blockAria.Height - 1} {z0 + blockAria.Depth - 1} air");
+                        }
+
+                        for(int y = 0; y < blockAria.Height; y++)
+                        {
+                            for(int z = 0; z<blockAria.Depth; z++)
+                            {
+                                for(int x = 0; x < blockAria.Width; x++)
+                                {
+                                    var blockIndex = blockAria.GetBlock(x, y, z);
+                                    if (blockIndex == 0)
+                                    {
+                                        continue;
+                                    }
+                                    var blockName = Block.Definitions[blockIndex].Name;
+                                    
+                                    minecraft.SetBlock(x0 + x, y0 + y, z0 + z, blockName);
+                                }
+                            }
+                        }
+
+                    });
+                });
         }
 
         private void InitKeyDownCommands()
@@ -185,7 +257,6 @@ namespace MinecraftBlockBuilder.ViewModels
                 .Where(e => e.KeyType == KeyType.Space)
                 .Subscribe(_ =>
                 {
-                    System.Diagnostics.Debug.WriteLine(SelectedBlock.Value.Name);
                     blockAria.SetBlock(SelectedBlock.Value.Index);
                     RaiseUpdateSuface();
                 })
@@ -306,7 +377,10 @@ namespace MinecraftBlockBuilder.ViewModels
             blockAria.PaintZY(g);
         }
 
-
+        public void AddService(IService service)
+        {
+            Services.Add(service);
+        }
     }
 
 

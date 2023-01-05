@@ -2,7 +2,7 @@
 
 namespace MinecraftBlockBuilder.Bindings
 {
-    class KeyEvent
+    public class KeyEvent
     {
         public KeyType KeyType { get; set; }
         public bool IsPressedSpace { get; set; }

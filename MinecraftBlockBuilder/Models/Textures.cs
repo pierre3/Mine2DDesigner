@@ -3,7 +3,7 @@ using System.IO;
 
 namespace MinecraftBlockBuilder.Models
 {
-    internal class Textures
+    public class Textures
     {
         public string Top { get; init; }
         public string Side { get; init; }
