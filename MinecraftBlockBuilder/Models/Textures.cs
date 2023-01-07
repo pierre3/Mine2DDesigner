@@ -5,8 +5,8 @@ namespace MinecraftBlockBuilder.Models
 {
     public class Textures
     {
-        public string Top { get; init; }
-        public string Side { get; init; }
+        public string? Top { get; init; }
+        public string? Side { get; init; }
 
         public Textures(string name)
         {
@@ -32,8 +32,8 @@ namespace MinecraftBlockBuilder.Models
         }
         public Textures()
         {
-            Top = string.Empty;
-            Side = string.Empty;
+            Top = null;
+            Side = null;
         }
 
         private byte[]? TopTextureBytes { get; set; }
@@ -41,7 +41,7 @@ namespace MinecraftBlockBuilder.Models
 
         public byte[] GetTextureBytes(TextureType textureType)
         {
-            if (Top == string.Empty || Side == string.Empty)
+            if (string.IsNullOrEmpty(Top) || string.IsNullOrEmpty(Side))
             {
                 return Array.Empty<byte>();
             }

@@ -9,7 +9,10 @@ namespace MinecraftBlockBuilder.Models
 
         public ushort Index { get; }
         public string Name { get; init; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
         public Textures Textures { get; init; }
+
         public Block(ushort index, string name)
         {
             Index = index;

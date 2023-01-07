@@ -4,24 +4,24 @@ using System.Linq;
 
 namespace MinecraftBlockBuilder.Services
 {
-    public class ServiceCollection : ICollection<IService>
+    public class DialogServiceCollection : ICollection<IDialogService>
     {
-        private IList<IService> items;
-        public ServiceCollection()
+        private IList<IDialogService> items;
+        public DialogServiceCollection()
         {
-            items = new List<IService>();
+            items = new List<IDialogService>();
         }
 
-        public T? Get<T>() where T : IService
+        public IDialogService? Get<TVm>()
         {
-            return items.OfType<T>().FirstOrDefault();
+            return items.FirstOrDefault(s => s.VmType == typeof(TVm));
         }
 
         public int Count => items.Count;
 
         public bool IsReadOnly => items.IsReadOnly;
 
-        public void Add(IService item)
+        public void Add(IDialogService item)
         {
             items.Add(item);
         }
@@ -31,22 +31,22 @@ namespace MinecraftBlockBuilder.Services
             items.Clear();
         }
 
-        public bool Contains(IService item)
+        public bool Contains(IDialogService item)
         {
             return items.Contains(item);
         }
 
-        public void CopyTo(IService[] array, int arrayIndex)
+        public void CopyTo(IDialogService[] array, int arrayIndex)
         {
             items.CopyTo(array, arrayIndex);
         }
 
-        public IEnumerator<IService> GetEnumerator()
+        public IEnumerator<IDialogService> GetEnumerator()
         {
             return items.GetEnumerator();
         }
 
-        public bool Remove(IService item)
+        public bool Remove(IDialogService item)
         {
             return items.Remove(item);
         }

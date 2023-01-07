@@ -31,9 +31,12 @@ namespace MinecraftBlockBuilder.Views
             {
                 paintPlaneView = new PaintPlaneView(paintPlane, skElementXZ, skElementZY, skElementXY);
             }
-            if (DataContext is Services.IServiceProvider serviceProvider)
+            if (DataContext is IDialogServiceProvider serviceProvider)
             {
-                serviceProvider.AddService(new SelectBlockWindowService());
+                serviceProvider.AddService(new SelectBlockWindowService(this));
+                serviceProvider.AddService(new NewProjectWindowService(this));
+                serviceProvider.AddService(new OpenFileDialogService(this));
+                serviceProvider.AddService(new SaveFileDialogService(this));
             }
         }
 

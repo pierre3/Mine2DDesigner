@@ -55,7 +55,7 @@
                           Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
                 <sk:SKElement
                           x:Name="skElementXZ"
-                          Margin="8" Width="400" Height="400" 
+                          Margin="8" Width="{Binding WidthXZ.Value}" Height="{Binding HeightXZ.Value}" 
                           HorizontalAlignment="Left" VerticalAlignment="Top" 
                           PaintSurface="SKElement_PaintSurfaceXZ">
                     <sk:SKElement.LayoutTransform>
@@ -72,7 +72,7 @@
                       Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
                 <sk:SKElement
                       x:Name="skElementXY"
-                      Margin="8" Width="400" Height="400" 
+                      Margin="8" Width="{Binding WidthXY.Value}" Height="{Binding HeightXY.Value}" 
                       HorizontalAlignment="Left" VerticalAlignment="Top" 
                       PaintSurface="SKElement_PaintSurfaceXY">
                     <sk:SKElement.LayoutTransform>
@@ -89,7 +89,7 @@
                       Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
                 <sk:SKElement
                       x:Name="skElementZY"
-                      Margin="8" Width="400" Height="400" 
+                      Margin="8" Width="{Binding WidthZY.Value}" Height="{Binding HeightZY.Value}" 
                       HorizontalAlignment="Left" VerticalAlignment="Top" 
                       PaintSurface="SKElement_PaintSurfaceZY">
                     <sk:SKElement.LayoutTransform>
@@ -98,64 +98,79 @@
                 </sk:SKElement>
             </ScrollViewer>
         </Border>
-        <Grid Grid.Row="3" Grid.Column="3" Margin="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            <ToolBar>
-                <Button FontFamily="Segoe MDL2 Assets" FontSize="24">&#xE78B;</Button>
-            </ToolBar>
-            <ListBox Grid.Row="1" SelectionMode="Single"
-                ItemsSource="{Binding ToolBoxItems}" 
-                SelectedItem="{Binding SelectedBlock.Value,Mode=TwoWay}">
-
-                <behaviors:Interaction.Triggers>
-                    <behaviors:EventTrigger EventName="MouseDoubleClick">
-                        <rp:EventToReactiveCommand Command="{Binding SelectBlockCommand}"/>
-                    </behaviors:EventTrigger>
-                </behaviors:Interaction.Triggers>
-
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="m:Block">
-                        <Image Source="{Binding Path=Textures.Side}" Width="32" Height="32" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-            </ListBox>
-            <GroupBox Margin="8" Grid.Row="2" Header="Rcon Settings">
+        <TabControl Grid.Row="3" Grid.Column="3" Margin="8">
+            <TabItem Header="{Binding ProjectName.Value}">
                 <Grid >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
-                        <RowDefinition Height="auto"/>
-                        <RowDefinition Height="auto"/>
-                        <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Padding="2" Margin="4">Server</Label>
-                    <TextBox Grid.Row="0" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconServer.Value}"/>
-                    <Label Grid.Row="1" Grid.Column="0" Padding="2" Margin="4">Port</Label>
-                    <TextBox Grid.Row="1" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconPort.Value}"/>
-                    <Label Grid.Row="2" Grid.Column="0" Padding="2" Margin="4">Password</Label>
-                    <TextBox Grid.Row="2" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconPassword.Value}"/>
-                    <Label Grid.Row="3" Grid.Column="0" Padding="2" Margin="4">Player ID</Label>
-                    <TextBox Grid.Row="3" Grid.Column="1" Padding="2" Margin="4" Text="{Binding PlayerId.Value}"/>
-                    <CheckBox Grid.Row="4" Grid.Column="1" Padding="2" Margin="4" IsChecked="{Binding LevelingOfGround.Value}">Leveling of Ground</CheckBox>
-                    <Button Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Center" Padding="10,2" 
+                    <ToolBar>
+                        <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="New" Command="{Binding NewCommand}">&#xE78B;</Button>
+                        <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Open" Command="{Binding OpenCommand}">&#xE8E5;</Button>
+                        <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Save" Command="{Binding SaveCommand}">&#xE74E;</Button>
+                        <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Save As" Command="{Binding SaveAsCommand}">&#xE792;</Button>
+                    </ToolBar>
+
+                    <StackPanel Grid.Row="1" Margin="8" Orientation="Horizontal">
+                        <Image Source="{Binding SelectedBlock.Value.Textures.Side}" MinWidth="16" MinHeight="16"/>
+                        <TextBlock Margin="8,0" Text="{Binding SelectedBlock.Value.Name}"/>
+                    </StackPanel>
+
+                    <ListBox x:Name="toolBoxList" Grid.Row="2"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ItemsSource="{Binding ToolBoxItems}" 
+                SelectedIndex="{Binding SelectedBlockIndex.Value,Mode=TwoWay}">
+
+                        <behaviors:Interaction.Triggers>
+                            <behaviors:EventTrigger EventName="MouseDoubleClick">
+                                <rp:EventToReactiveCommand Command="{Binding SelectBlockCommand}"/>
+                            </behaviors:EventTrigger>
+                        </behaviors:Interaction.Triggers>
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="m:Block">
+                                <Image Source="{Binding Path=Textures.Side}" Width="24" Height="24" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                    <GroupBox Margin="8" Grid.Row="3" Header="Rcon Settings">
+                        <Grid >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Padding="2" Margin="4">Server</Label>
+                            <TextBox Grid.Row="0" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconServer.Value}"/>
+                            <Label Grid.Row="1" Grid.Column="0" Padding="2" Margin="4">Port</Label>
+                            <TextBox Grid.Row="1" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconPort.Value}"/>
+                            <Label Grid.Row="2" Grid.Column="0" Padding="2" Margin="4">Password</Label>
+                            <TextBox Grid.Row="2" Grid.Column="1" Padding="2" Margin="4" Text="{Binding RconPassword.Value}"/>
+                            <Label Grid.Row="3" Grid.Column="0" Padding="2" Margin="4">Player ID</Label>
+                            <TextBox Grid.Row="3" Grid.Column="1" Padding="2" Margin="4" Text="{Binding PlayerId.Value}"/>
+                            <CheckBox Grid.Row="4" Grid.Column="1" Padding="2" Margin="4" IsChecked="{Binding LevelingOfGround.Value}">Leveling of Ground</CheckBox>
+                            <Button Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Center" Padding="10,2" 
                             Command="{Binding SendBlocksCommand}">Send Blocks</Button>
+                        </Grid>
+                    </GroupBox>
                 </Grid>
-            </GroupBox>
-        </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

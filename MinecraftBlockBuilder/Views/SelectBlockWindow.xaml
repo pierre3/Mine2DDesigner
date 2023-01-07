@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:m="clr-namespace:MinecraftBlockBuilder.Models"
         mc:Ignorable="d"
-        Title="SelectBlockWindow" Height="450" Width="800">
+        Title="Block Sellection" Height="450" Width="800" 
+            WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -19,7 +20,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="m:Block">
                     <StackPanel Margin="4">
-                        <Image Source="{Binding Path=Textures.Side}" Width="32" Height="32" />
+                        <Image Source="{Binding Path=Textures.Side, TargetNullValue={x:Null}}" Width="32" Height="32" />
                         <TextBlock Text="{Binding Path=Name}"/>
                     </StackPanel>
                 </DataTemplate>

@@ -1,5 +1,4 @@
 ﻿using MinecraftBlockBuilder.Services;
-using MinecraftBlockBuilder.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +16,11 @@ using System.Windows.Shapes;
 namespace MinecraftBlockBuilder.Views
 {
     /// <summary>
-    /// SelectBlockWindow.xaml の相互作用ロジック
+    /// NewProjectWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class SelectBlockWindow : Window
+    public partial class NewProjectWindow : Window
     {
-        
-        public SelectBlockWindow(IDialogViewModel vm)
+        public NewProjectWindow(IDialogViewModel vm)
         {
             InitializeComponent();
             DataContext = vm;
@@ -35,8 +33,7 @@ namespace MinecraftBlockBuilder.Views
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult= false;
+            DialogResult = false;
         }
-
     }
 }

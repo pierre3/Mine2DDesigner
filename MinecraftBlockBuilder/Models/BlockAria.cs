@@ -1,13 +1,14 @@
 ﻿using MinecraftBlockBuilder.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace MinecraftBlockBuilder.Models
 {
     public class BlockAria
     {
-        private static readonly int blockSize = 16;
+        public static readonly int BlockSize = 16;
         public int Width { get; }
         public int Height { get; }
         public int Depth { get; }
@@ -16,14 +17,22 @@ namespace MinecraftBlockBuilder.Models
         private ushort currentY = 0;
         private ushort currentZ = 0;
 
-
+        public IReadOnlyCollection<ushort[]> Aria { get => new ReadOnlyCollection<ushort[]>(aria); }
         private IList<ushort[]> aria;
-        public BlockAria(int width, int height, int depth)
+        
+        public BlockAria(int width, int height, int depth, IEnumerable<ushort[]>? aria = null)
         {
             Width = width;
             Height = height;
             Depth = depth;
-            aria = Enumerable.Range(0, height).Select(_ => Enumerable.Repeat<ushort>(0, width * depth).ToArray()).ToList();
+            if (aria is null)
+            {
+                this.aria = Enumerable.Range(0, height).Select(_ => Enumerable.Repeat<ushort>(0, width * depth).ToArray()).ToList();
+            }
+            else
+            {
+                this.aria = aria.ToList();
+            }
         }
 
         public void SetBlock(ushort value)
@@ -59,7 +68,7 @@ namespace MinecraftBlockBuilder.Models
             DrawCurrentLine(g, Depth, Height, currentZ, currentY);
         }
 
-        public void IncrementX(Action? afterAction=null)
+        public void IncrementX(Action? afterAction = null)
         {
             if (currentX < Width - 1)
             {
@@ -113,7 +122,7 @@ namespace MinecraftBlockBuilder.Models
                 afterAction?.Invoke();
             }
         }
- 
+
         private void DrawImageXZ(IGraphics g, int y)
         {
             for (int z = 0; z < Depth; z++)
@@ -125,10 +134,10 @@ namespace MinecraftBlockBuilder.Models
                     {
                         g.DrawImage(
                             new Rectangle(
-                                x * blockSize,
-                                (Depth - 1 - z) * blockSize,
-                                blockSize,
-                                blockSize),
+                                x * BlockSize,
+                                (Depth - 1 - z) * BlockSize,
+                                BlockSize,
+                                BlockSize),
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
                     }
                 }
@@ -146,10 +155,10 @@ namespace MinecraftBlockBuilder.Models
                     {
                         g.DrawImage(
                             new Rectangle(
-                                x * blockSize,
-                                (Height - 1 - y) * blockSize,
-                                blockSize,
-                                blockSize),
+                                x * BlockSize,
+                                (Height - 1 - y) * BlockSize,
+                                BlockSize,
+                                BlockSize),
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
                     }
                 }
@@ -167,10 +176,10 @@ namespace MinecraftBlockBuilder.Models
                     {
                         g.DrawImage(
                             new Rectangle(
-                                z * blockSize,
-                                (Height - 1 - y) * blockSize,
-                                blockSize,
-                                blockSize),
+                                z * BlockSize,
+                                (Height - 1 - y) * BlockSize,
+                                BlockSize,
+                                BlockSize),
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
                     }
                 }
@@ -182,15 +191,15 @@ namespace MinecraftBlockBuilder.Models
             for (int x = 0; x < w; x++)
             {
                 g.DrawLine(
-                    new Point(x * blockSize, 0),
-                    new Point(x * blockSize, h * blockSize),
+                    new Point(x * BlockSize, 0),
+                    new Point(x * BlockSize, h * BlockSize),
                     new Stroke(Color.DarkGray, 1));
             }
             for (int y = 0; y < h; y++)
             {
                 g.DrawLine(
-                    new Point(0, y * blockSize),
-                    new Point(w * blockSize, y * blockSize),
+                    new Point(0, y * BlockSize),
+                    new Point(w * BlockSize, y * BlockSize),
                     new Stroke(Color.DarkGray, 1));
             }
         }
@@ -198,21 +207,21 @@ namespace MinecraftBlockBuilder.Models
         private static void DrawCurrentLine(IGraphics g, int w, int h, int cX, int cY)
         {
             g.DrawLine(
-                    new Point(cX * blockSize, 0),
-                    new Point(cX * blockSize, h * blockSize),
+                    new Point(cX * BlockSize, 0),
+                    new Point(cX * BlockSize, h * BlockSize),
                     new Stroke(Color.Blue, 2));
             g.DrawLine(
-                new Point(cX * blockSize + blockSize, 0),
-                new Point(cX * blockSize + blockSize, h * blockSize),
+                new Point(cX * BlockSize + BlockSize, 0),
+                new Point(cX * BlockSize + BlockSize, h * BlockSize),
                 new Stroke(Color.Blue, 2));
 
             g.DrawLine(
-                    new Point(0, (h - 1 - cY) * blockSize),
-                    new Point(w * blockSize, (h - 1 - cY) * blockSize),
+                    new Point(0, (h - 1 - cY) * BlockSize),
+                    new Point(w * BlockSize, (h - 1 - cY) * BlockSize),
                     new Stroke(Color.Blue, 2));
             g.DrawLine(
-                new Point(0, (h - 1 - cY) * blockSize + blockSize),
-                new Point(w * blockSize, (h - 1 - cY) * blockSize + blockSize),
+                new Point(0, (h - 1 - cY) * BlockSize + BlockSize),
+                new Point(w * BlockSize, (h - 1 - cY) * BlockSize + BlockSize),
                 new Stroke(Color.Blue, 2));
         }
     }
