@@ -10,7 +10,7 @@
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
         mc:Ignorable="d"
-        Title="Minecraft Block Designer" Height="1024" Width="1024">
+        Title="Mine 2D Designer" Height="1024" Width="1024">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
