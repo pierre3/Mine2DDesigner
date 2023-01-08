@@ -167,7 +167,7 @@ namespace Mine2DDesigner.ViewModels
                             for (int x = 0; x < blockAria.Width; x++)
                             {
                                 var blockIndex = blockAria.GetBlock(x, y, z);
-                                if (ReplaceAirBlocks.Value && blockIndex == 0)
+                                if (!ReplaceAirBlocks.Value && blockIndex == 0)
                                 {
                                     continue;
                                 }
