@@ -1,9 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Reactive.Disposables;
-using MinecraftBlockDesigner.Services;
+﻿using MinecraftBlockDesigner.Services;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using System;
+using System.ComponentModel;
+using System.Reactive.Disposables;
 
 namespace MinecraftBlockDesigner.ViewModels
 {

@@ -22,7 +22,7 @@ namespace MinecraftBlockDesigner.Bindings
             var type = (PlaneType)value;
             return plane switch
             {
-                "XZ" => (type == PlaneType.XZ) ? Brushes.Orange : Brushes.Transparent,
+                "ZX" => (type == PlaneType.ZX) ? Brushes.Orange : Brushes.Transparent,
                 "XY" => (type == PlaneType.XY) ? Brushes.Orange : Brushes.Transparent,
                 "ZY" => (type == PlaneType.ZY) ? Brushes.Orange : Brushes.Transparent,
                 _ => Brushes.Transparent

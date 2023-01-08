@@ -29,7 +29,7 @@ namespace MinecraftBlockDesigner.Views
             InitializeComponent();
             if (DataContext is IPaintPlane paintPlane)
             {
-                paintPlaneView = new PaintPlaneView(paintPlane, skElementXZ, skElementZY, skElementXY);
+                paintPlaneView = new PaintPlaneView(paintPlane, skElementZX, skElementZY, skElementXY);
             }
             if (DataContext is IDialogServiceProvider serviceProvider)
             {
@@ -40,7 +40,7 @@ namespace MinecraftBlockDesigner.Views
             }
         }
 
-        private void SKElement_PaintSurfaceXZ(object sender, SKPaintSurfaceEventArgs e) => paintPlaneView?.PaintSurfaceXZ(e);
+        private void SKElement_PaintSurfaceZX(object sender, SKPaintSurfaceEventArgs e) => paintPlaneView?.PaintSurfaceZX(e);
 
         private void SKElement_PaintSurfaceXY(object sender, SKPaintSurfaceEventArgs e) => paintPlaneView?.PaintSurfaceXY(e);
 

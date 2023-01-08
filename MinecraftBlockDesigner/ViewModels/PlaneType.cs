@@ -2,7 +2,7 @@
 {
     public enum PlaneType
     {
-        XZ,
+        ZX,
         ZY,
         XY
     }

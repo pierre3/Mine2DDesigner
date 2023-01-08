@@ -19,7 +19,7 @@ namespace MinecraftBlockDesigner.Models
 
         public IReadOnlyCollection<ushort[]> Aria { get => new ReadOnlyCollection<ushort[]>(aria); }
         private IList<ushort[]> aria;
-        
+
         public BlockAria(int width, int height, int depth, IEnumerable<ushort[]>? aria = null)
         {
             Width = width;
@@ -42,16 +42,16 @@ namespace MinecraftBlockDesigner.Models
 
         public void SetBlock(int x, int y, int z, ushort value)
         {
-            aria[y][z * Width + x] = GetBlock(x, y, z) == value ? (ushort)0 : value;
+            aria[y][x * Depth + z] = GetBlock(x, y, z) == value ? (ushort)0 : value;
         }
 
-        public ushort GetBlock(int x, int y, int z) => aria[y][z * Width + x];
+        public ushort GetBlock(int x, int y, int z) => aria[y][x * Depth + z];
 
-        public void PaintXZ(IGraphics g)
+        public void PaintZX(IGraphics g)
         {
-            DrawGridLine(g, Width, Depth);
-            DrawImageXZ(g, currentY);
-            DrawCurrentLine(g, Width, Depth, currentX, currentZ);
+            DrawGridLine(g, Depth, Width);
+            DrawImageZX(g, currentY);
+            DrawCurrentLine(g, Depth, Width, currentZ, currentX);
         }
 
         public void PaintXY(IGraphics g)
@@ -123,19 +123,19 @@ namespace MinecraftBlockDesigner.Models
             }
         }
 
-        private void DrawImageXZ(IGraphics g, int y)
+        private void DrawImageZX(IGraphics g, int y)
         {
-            for (int z = 0; z < Depth; z++)
+            for (int x = 0; x < Width; x++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int z = 0; z < Depth; z++)
                 {
                     var block = GetBlock(x, y, z);
                     if (block != 0)
                     {
                         g.DrawImage(
                             new Rectangle(
-                                x * BlockSize,
-                                (Depth - 1 - z) * BlockSize,
+                                z * BlockSize,
+                                (Width - 1 - x) * BlockSize,
                                 BlockSize,
                                 BlockSize),
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));

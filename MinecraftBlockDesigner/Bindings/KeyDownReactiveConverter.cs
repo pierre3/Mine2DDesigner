@@ -13,11 +13,11 @@ namespace MinecraftBlockDesigner.Bindings
     {
         protected override IObservable<KeyEvent?> OnConvert(IObservable<KeyEventArgs?> source)
         {
-            return source.Where(e =>  e?.IsDown == true).Select(e =>
+            return source.Where(e => e?.IsDown == true).Select(e =>
             {
                 var keyEvent = new KeyEvent()
                 {
-                    IsPressedSpace = e?.KeyboardDevice?.IsKeyDown(Key.Space) == true,
+                    IsPressedSpace = e!.KeyboardDevice.IsKeyDown(Key.Space) == true,
                     KeyType = e?.Key switch
                     {
                         Key.Left => KeyType.Left,
@@ -27,13 +27,22 @@ namespace MinecraftBlockDesigner.Bindings
                         Key.Space => KeyType.Space,
                         Key.PageUp => KeyType.PageUp,
                         Key.PageDown => KeyType.PageDown,
-                        Key.Tab=> KeyType.Tab,
-                        Key.Z=>KeyType.ZoomIn,
-                        Key.X=>KeyType.ZoomOut,
+                        Key.Tab => KeyType.Tab,
+                        Key.Z => KeyType.ZoomIn,
+                        Key.X => KeyType.ZoomOut,
+                        Key _key when
+                            (_key >= Key.D0 && _key <= Key.D9)
+                            || (_key >= Key.NumPad0 && _key <= Key.NumPad9) => KeyType.Num,
                         _ => KeyType.None
                     }
                 };
-                if (e is not null && keyEvent.KeyType != KeyType.None) { e.Handled = true; }
+                if (keyEvent.KeyType == KeyType.Num)
+                {
+                    keyEvent.NumKey = e!.Key < Key.NumPad0
+                        ? e.Key - Key.D0
+                        : e.Key - Key.NumPad0;
+                }
+                if (keyEvent.KeyType != KeyType.None) { e!.Handled = true; }
                 return keyEvent;
             }).Where(k => k.KeyType != KeyType.None);
         }

@@ -19,6 +19,11 @@ namespace MinecraftBlockDesigner.Models
                 Top = topFileName;
                 Side = sideFileName;
             }
+            else if (File.Exists(topFileName) && File.Exists(fileName))
+            {
+                Top = topFileName;
+                Side = fileName;
+            }
             else if (File.Exists(fileName))
             {
                 Top = fileName;

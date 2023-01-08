@@ -12,6 +12,7 @@
         PageDown,
         Tab,
         ZoomIn,
-        ZoomOut
+        ZoomOut,
+        Num,
     }
 }

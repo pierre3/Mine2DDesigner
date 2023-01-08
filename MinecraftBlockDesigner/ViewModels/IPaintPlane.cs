@@ -6,7 +6,7 @@ namespace MinecraftBlockDesigner.ViewModels
     public interface IPaintPlane
     {
         event Action UpdateSuface;
-        void PaintXZ(IGraphics g);
+        void PaintZX(IGraphics g);
 
         void PaintXY(IGraphics g);
 

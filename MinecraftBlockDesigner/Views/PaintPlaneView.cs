@@ -10,19 +10,19 @@ namespace MinecraftBlockDesigner.Views
     public class PaintPlaneView
     {
         private readonly IPaintPlane paintPlane;
-        private readonly SKElement skElementXZ;
+        private readonly SKElement skElementZX;
         private readonly SKElement skElementZY;
         private readonly SKElement skElementXY;
 
-        public PaintPlaneView(IPaintPlane paintPlane, SKElement skElementXZ, SKElement skElementZY, SKElement skElementXY)
+        public PaintPlaneView(IPaintPlane paintPlane, SKElement skElementZX, SKElement skElementZY, SKElement skElementXY)
         {
             this.paintPlane = paintPlane;
             this.skElementXY = skElementXY;
-            this.skElementXZ = skElementXZ;
+            this.skElementZX = skElementZX;
             this.skElementZY = skElementZY;
             this.paintPlane.UpdateSuface += () =>
             {
-                skElementXZ.InvalidateVisual();
+                skElementZX.InvalidateVisual();
                 skElementXY.InvalidateVisual();
                 skElementZY.InvalidateVisual();
             };
@@ -43,11 +43,11 @@ namespace MinecraftBlockDesigner.Views
             });
         }
 
-        public void PaintSurfaceXZ(SKPaintSurfaceEventArgs e)
+        public void PaintSurfaceZX(SKPaintSurfaceEventArgs e)
         {
             ClearCanvas(e);
-            var g = GetGraphics(skElementXZ, e.Surface.Canvas);
-            paintPlane?.PaintXZ(g);
+            var g = GetGraphics(skElementZX, e.Surface.Canvas);
+            paintPlane?.PaintZX(g);
         }
 
         public void PaintSurfaceXY(SKPaintSurfaceEventArgs e)

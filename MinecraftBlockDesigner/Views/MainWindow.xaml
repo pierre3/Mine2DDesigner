@@ -48,23 +48,23 @@
                           ShowsPreview="true"
                           Background="DarkSlateGray"></GridSplitter>
         <Border Grid.Row="0" Grid.Column="0" 
-                    BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=XZ}"
+                    BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=ZX}"
                     BorderThickness="2">
             <ScrollViewer 
                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
                           Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
                 <sk:SKElement
-                          x:Name="skElementXZ"
-                          Margin="8" Width="{Binding WidthXZ.Value}" Height="{Binding HeightXZ.Value}" 
+                          x:Name="skElementZX"
+                          Margin="8" Width="{Binding WidthZX.Value}" Height="{Binding HeightZX.Value}" 
                           HorizontalAlignment="Left" VerticalAlignment="Top" 
-                          PaintSurface="SKElement_PaintSurfaceXZ">
+                          PaintSurface="SKElement_PaintSurfaceZX">
                     <sk:SKElement.LayoutTransform>
-                        <ScaleTransform ScaleX="{Binding ScaleXZ.Value}" ScaleY="{Binding ScaleXZ.Value}"/>
+                        <ScaleTransform ScaleX="{Binding ScaleZX.Value}" ScaleY="{Binding ScaleZX.Value}"/>
                     </sk:SKElement.LayoutTransform>
                 </sk:SKElement>
             </ScrollViewer>
         </Border>
-        <Border Grid.Row="2" Grid.Column="0"
+        <Border Grid.Row="0" Grid.Column="2"
                     BorderThickness="2"
                     BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=XY}">
             <ScrollViewer 
@@ -81,7 +81,7 @@
                 </sk:SKElement>
             </ScrollViewer>
         </Border>
-        <Border Grid.Row="0" Grid.Column="2"
+        <Border Grid.Row="2" Grid.Column="0"
                     BorderThickness="2"
                     BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=ZY}">
             <ScrollViewer 

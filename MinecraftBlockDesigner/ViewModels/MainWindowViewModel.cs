@@ -1,10 +1,8 @@
-﻿using Microsoft.Win32;
-using MinecraftBlockDesigner.Bindings;
+﻿using MinecraftBlockDesigner.Bindings;
 using MinecraftBlockDesigner.Graphics;
 using MinecraftBlockDesigner.Models;
 using MinecraftBlockDesigner.Services;
 using MinecraftConnection;
-using MinecraftConnection.RCON;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -15,9 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Markup;
 
 namespace MinecraftBlockDesigner.ViewModels
 {
@@ -32,16 +28,16 @@ namespace MinecraftBlockDesigner.ViewModels
         public event Action? UpdateSuface;
 
 
-        public ReactivePropertySlim<PlaneType> ActivePlane { get; } = new(PlaneType.XZ);
-        public ReactivePropertySlim<double> ScaleXZ { get; } = new(1.0);
+        public ReactivePropertySlim<PlaneType> ActivePlane { get; } = new(PlaneType.ZX);
+        public ReactivePropertySlim<double> ScaleZX { get; } = new(1.0);
         public ReactivePropertySlim<double> ScaleZY { get; } = new(1.0);
         public ReactivePropertySlim<double> ScaleXY { get; } = new(1.0);
 
-        public ReactivePropertySlim<int> WidthXZ { get; } = new(BlockAria.BlockSize * 25);
+        public ReactivePropertySlim<int> WidthZX { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> WidthZY { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> WidthXY { get; } = new(BlockAria.BlockSize * 25);
 
-        public ReactivePropertySlim<int> HeightXZ { get; } = new(BlockAria.BlockSize * 25);
+        public ReactivePropertySlim<int> HeightZX { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> HeightZY { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> HeightXY { get; } = new(BlockAria.BlockSize * 25);
 
@@ -267,10 +263,10 @@ namespace MinecraftBlockDesigner.ViewModels
         {
             blockAria = new BlockAria(width, height, depth, aria);
             WidthXY.Value = BlockAria.BlockSize * blockAria.Width;
-            WidthXZ.Value = BlockAria.BlockSize * blockAria.Width;
+            WidthZX.Value = BlockAria.BlockSize * blockAria.Depth;
             WidthZY.Value = BlockAria.BlockSize * blockAria.Depth;
             HeightXY.Value = BlockAria.BlockSize * blockAria.Height;
-            HeightXZ.Value = BlockAria.BlockSize * blockAria.Depth;
+            HeightZX.Value = BlockAria.BlockSize * blockAria.Width;
             HeightZY.Value = BlockAria.BlockSize * blockAria.Height;
         }
 
@@ -294,8 +290,8 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            blockAria.DecrementX(AfterAction(e));
+                        case PlaneType.ZX:
+                            blockAria.DecrementZ(AfterAction(e));
                             break;
                         case PlaneType.ZY:
                             blockAria.DecrementZ(AfterAction(e));
@@ -312,8 +308,8 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            blockAria.IncrementX(AfterAction(e));
+                        case PlaneType.ZX:
+                            blockAria.IncrementZ(AfterAction(e));
                             break;
                         case PlaneType.ZY:
                             blockAria.IncrementZ(AfterAction(e));
@@ -330,8 +326,8 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            blockAria.IncrementZ(AfterAction(e));
+                        case PlaneType.ZX:
+                            blockAria.IncrementX(AfterAction(e));
                             break;
                         case PlaneType.ZY:
                             blockAria.IncrementY(AfterAction(e));
@@ -348,8 +344,8 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            blockAria.DecrementZ(AfterAction(e));
+                        case PlaneType.ZX:
+                            blockAria.DecrementX(AfterAction(e));
                             break;
                         case PlaneType.ZY:
                             blockAria.DecrementY(AfterAction(e));
@@ -367,7 +363,7 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
+                        case PlaneType.ZX:
                             blockAria.DecrementY(AfterAction(e));
                             break;
                         case PlaneType.ZY:
@@ -385,7 +381,7 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
+                        case PlaneType.ZX:
                             blockAria.IncrementY(AfterAction(e));
                             break;
                         case PlaneType.ZY:
@@ -413,26 +409,34 @@ namespace MinecraftBlockDesigner.ViewModels
                 .Subscribe(_ =>
                 {
                     ActivePlane.Value = (ActivePlane.Value == PlaneType.XY)
-                        ? PlaneType.XZ
+                        ? PlaneType.ZX
                         : ActivePlane.Value + 1;
 
                 })
                 .AddTo(disposables);
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.Num)
+               .Subscribe(e =>
+               {
+                   SelectedBlockIndex.Value = e.NumKey;
+               })
+               .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.ZoomIn)
                 .Subscribe(_ =>
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            ScaleXZ.Value = ScaleXZ.Value switch
+                        case PlaneType.ZX:
+                            ScaleZX.Value = ScaleZX.Value switch
                             {
                                 0.5 => 0.75,
                                 0.75 => 1.0,
                                 1.0 => 1.5,
                                 1.5 => 1.75,
                                 1.75 => 2.0,
-                                _ => ScaleXZ.Value
+                                _ => ScaleZX.Value
                             };
                             break;
                         case PlaneType.ZY:
@@ -466,15 +470,15 @@ namespace MinecraftBlockDesigner.ViewModels
                 {
                     switch (ActivePlane.Value)
                     {
-                        case PlaneType.XZ:
-                            ScaleXZ.Value = ScaleXZ.Value switch
+                        case PlaneType.ZX:
+                            ScaleZX.Value = ScaleZX.Value switch
                             {
                                 2.0 => 1.75,
                                 1.75 => 1.5,
                                 1.5 => 1.0,
                                 1.0 => 0.75,
                                 0.75 => 0.5,
-                                _ => ScaleXZ.Value
+                                _ => ScaleZX.Value
                             };
                             break;
                         case PlaneType.ZY:
@@ -509,9 +513,9 @@ namespace MinecraftBlockDesigner.ViewModels
             disposables.Dispose();
         }
 
-        void IPaintPlane.PaintXZ(IGraphics g)
+        void IPaintPlane.PaintZX(IGraphics g)
         {
-            blockAria.PaintXZ(g);
+            blockAria.PaintZX(g);
         }
 
         void IPaintPlane.PaintXY(IGraphics g)

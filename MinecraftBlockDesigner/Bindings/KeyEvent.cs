@@ -6,5 +6,6 @@ namespace MinecraftBlockDesigner.Bindings
     {
         public KeyType KeyType { get; set; }
         public bool IsPressedSpace { get; set; }
+        public int NumKey { get; set; } = -1;
     }
 }
