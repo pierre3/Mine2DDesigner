@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AssemblyVersion>0.1.0</AssemblyVersion>
+		<FileVersion>0.1.0.0</FileVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MinecraftConnection" Version="2.0.1" />
+		<PackageReference Include="ReactiveProperty.WPF" Version="8.2.0" />
+		<PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="assets\block\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+</Project>
