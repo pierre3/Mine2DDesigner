@@ -1,1 +1,1 @@
-# MinecraftBlockDesigner
+# Mine2DDesigner
