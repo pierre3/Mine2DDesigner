@@ -13,12 +13,14 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Mine2DDesigner.ViewModels
 {
     public class MainWindowViewModel : IDialogServiceProvider, IPaintPlane, INotifyPropertyChanged, IDisposable
     {
+        private AppSettings settings = new AppSettings();
         private BlockAria blockAria = new(25, 25, 25);
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
@@ -41,7 +43,6 @@ namespace Mine2DDesigner.ViewModels
         public ReactivePropertySlim<int> HeightZY { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> HeightXY { get; } = new(BlockAria.BlockSize * 25);
 
-
         public ReactivePropertySlim<string> RconServer { get; } = new("localhost");
         public ReactivePropertySlim<ushort> RconPort { get; } = new(25575);
         public ReactivePropertySlim<string> RconPassword { get; } = new("minecraft");
@@ -50,12 +51,17 @@ namespace Mine2DDesigner.ViewModels
         public ReactivePropertySlim<string> ProjectName { get; } = new("untitled");
         public ReactivePropertySlim<int> SelectedBlockIndex { get; }
         public ReactivePropertySlim<Block> SelectedBlock { get; }
+        public ReactivePropertySlim<int> StartX { get; } = new(0);
+        public ReactivePropertySlim<int> StartY { get; } = new(0);
+        public ReactivePropertySlim<int> StartZ { get; } = new(0);
 
+        public AsyncReactiveCommand GetPlayerLocationCommand { get; }
         public AsyncReactiveCommand SendBlocksCommand { get; }
         public AsyncReactiveCommand SaveCommand { get; }
         public AsyncReactiveCommand SaveAsCommand { get; }
         public AsyncReactiveCommand OpenCommand { get; }
         public ReactiveCommand NewCommand { get; }
+        public ReactiveCommand SettingsCommand { get; }
 
         private string CurrentFileName { get; set; } = Path.GetFullPath(Path.Combine(".\\data", "untitled.json"));
 
@@ -84,6 +90,7 @@ namespace Mine2DDesigner.ViewModels
         };
 
         public ReadOnlyReactiveCollection<Block> ToolBoxItems { get; }
+
         private void RaiseUpdateSuface()
         {
             UpdateSuface?.Invoke();
@@ -93,10 +100,18 @@ namespace Mine2DDesigner.ViewModels
         public ReactiveCommand SelectBlockCommand { get; set; }
 
         public DialogServiceCollection Services { get; } = new();
-
+                
         public MainWindowViewModel()
         {
             Directory.CreateDirectory(".\\data");
+            if (File.Exists("appsettings.json"))
+            {
+                var settingsJson = File.ReadAllText("appsettings.json");
+                if (settingsJson is not null)
+                {
+                    settings = JsonSerializer.Deserialize<AppSettings>(settingsJson) ?? new AppSettings();
+                }
+            }
             ToolBoxItems = toolBoxItems
                 .ToReadOnlyReactiveCollection()
                 .AddTo(disposables);
@@ -140,25 +155,36 @@ namespace Mine2DDesigner.ViewModels
 
             KeyDownCommand = new ReactiveCommand<KeyEvent>();
             InitKeyDownCommands();
-
+            
+            GetPlayerLocationCommand = new AsyncReactiveCommand();
             SendBlocksCommand = new AsyncReactiveCommand();
+            InitRconCommands();
+
             SaveCommand = new AsyncReactiveCommand();
             SaveAsCommand = new AsyncReactiveCommand();
             OpenCommand = new AsyncReactiveCommand();
             NewCommand = new ReactiveCommand();
+            SettingsCommand = new ReactiveCommand();
             InitMenuCommands();
         }
-
-        private void InitMenuCommands()
+        private void InitRconCommands()
         {
+            GetPlayerLocationCommand.Subscribe(async () =>
+            {
+                await Task.Run(() =>
+                {
+                    var minecraft = new MinecraftCommands(RconServer.Value, RconPort.Value, RconPassword.Value);
+                    StartX.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.X;
+                    StartY.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Y;
+                    StartZ.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Z;
+                });
+            }).AddTo(disposables);
+
             SendBlocksCommand.Subscribe(async () =>
             {
                 await Task.Run(() =>
                 {
                     var minecraft = new MinecraftCommands(RconServer.Value, RconPort.Value, RconPassword.Value);
-                    var x0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.X;
-                    var y0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Y;
-                    var z0 = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Z;
 
                     for (int y = 0; y < blockAria.Height; y++)
                     {
@@ -173,14 +199,17 @@ namespace Mine2DDesigner.ViewModels
                                 }
                                 var blockName = Block.Definitions[blockIndex].Name;
 
-                                minecraft.SetBlock(x0 + x, y0 + y, z0 + z, blockName);
+                                minecraft.SetBlock(StartX.Value + x, StartY.Value + y, StartZ.Value + z, blockName);
                             }
                         }
                     }
 
                 });
             }).AddTo(disposables);
+        }
 
+        private void InitMenuCommands()
+        {
             SaveCommand.Subscribe(async () =>
             {
                 await Save(CurrentFileName);
@@ -239,6 +268,21 @@ namespace Mine2DDesigner.ViewModels
                     ProjectName.Value + ".json");
                 SetBlockAria(vm.Width.Value, vm.Height.Value, vm.Depth.Value);
                 RaiseUpdateSuface();
+            }).AddTo(disposables);
+
+            SettingsCommand.Subscribe(() =>
+            {
+                var dialog = Services.Get<SettingsWindowViewModel>();
+                var vm = new SettingsWindowViewModel(settings.Rcon.Server, settings.Rcon.Port, settings.Rcon.Password);
+                if (dialog?.ShowDialog(vm) == true)
+                {
+                    settings.Rcon.Server = vm.Server.Value;
+                    settings.Rcon.Port = vm.Port.Value;
+                    settings.Rcon.Password= vm.Password.Value;
+                    File.WriteAllText("appsettings.json", JsonSerializer.Serialize(settings));
+                }
+
+
             }).AddTo(disposables);
         }
 

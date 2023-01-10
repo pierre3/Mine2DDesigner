@@ -37,6 +37,7 @@ namespace Mine2DDesigner.Views
                 serviceProvider.AddService(new NewProjectWindowService(this));
                 serviceProvider.AddService(new OpenFileDialogService(this));
                 serviceProvider.AddService(new SaveFileDialogService(this));
+                serviceProvider.AddService(new SettingsWindowService(this));
             }
         }
 
