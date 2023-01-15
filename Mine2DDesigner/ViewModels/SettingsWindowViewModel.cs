@@ -14,15 +14,15 @@ namespace Mine2DDesigner.ViewModels
 #pragma warning restore 0067
 
         public ReactivePropertySlim<string> Server { get; }
-        public ReactivePropertySlim<int> Port { get; }
+        public ReactivePropertySlim<ushort> Port { get; }
         public ReactivePropertySlim<string> Password { get; }
 
         private readonly CompositeDisposable disposables = new();
 
-        public SettingsWindowViewModel(string server, int port, string password)
+        public SettingsWindowViewModel(string server, ushort port, string password)
         {
             Server = new ReactivePropertySlim<string>(server).AddTo(disposables);
-            Port = new ReactivePropertySlim<int>(port).AddTo(disposables);
+            Port = new ReactivePropertySlim<ushort>(port).AddTo(disposables);
             Password = new ReactivePropertySlim<string>(password).AddTo(disposables);
         }
 

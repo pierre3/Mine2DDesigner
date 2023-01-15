@@ -14,7 +14,7 @@ namespace Mine2DDesigner.Models
     public class RconSettings
     {
         public string Server { get; set; } = "localhost";
-        public int Port { get; set; } = 25575;
+        public ushort Port { get; set; } = 25575;
         public string Password { get; set; } = "minecraft";
     }
 }

@@ -2,7 +2,6 @@
 using Mine2DDesigner.Graphics;
 using Mine2DDesigner.Models;
 using Mine2DDesigner.Services;
-using MinecraftConnection;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System;
@@ -14,7 +13,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Mine2DDesigner.ViewModels
 {
@@ -43,53 +41,35 @@ namespace Mine2DDesigner.ViewModels
         public ReactivePropertySlim<int> HeightZY { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> HeightXY { get; } = new(BlockAria.BlockSize * 25);
 
-        public ReactivePropertySlim<string> RconServer { get; } = new("localhost");
-        public ReactivePropertySlim<ushort> RconPort { get; } = new(25575);
-        public ReactivePropertySlim<string> RconPassword { get; } = new("minecraft");
-        public ReactivePropertySlim<string> PlayerId { get; } = new("bacon_king112");
-        public ReactivePropertySlim<bool> ReplaceAirBlocks { get; } = new(false);
+        
         public ReactivePropertySlim<string> ProjectName { get; } = new("untitled");
         public ReactivePropertySlim<int> SelectedBlockIndex { get; }
         public ReactivePropertySlim<Block> SelectedBlock { get; }
-        public ReactivePropertySlim<int> StartX { get; } = new(0);
-        public ReactivePropertySlim<int> StartY { get; } = new(0);
-        public ReactivePropertySlim<int> StartZ { get; } = new(0);
-
-        public AsyncReactiveCommand GetPlayerLocationCommand { get; }
-        public AsyncReactiveCommand SendBlocksCommand { get; }
+        
         public AsyncReactiveCommand SaveCommand { get; }
         public AsyncReactiveCommand SaveAsCommand { get; }
         public AsyncReactiveCommand OpenCommand { get; }
         public ReactiveCommand NewCommand { get; }
         public ReactiveCommand SettingsCommand { get; }
+        public ReactiveCommand ClearErrorMessagesCommand { get; }
+        public ReactiveCommand SendBlocksCommand { get; }
 
         private string CurrentFileName { get; set; } = Path.GetFullPath(Path.Combine(".\\data", "untitled.json"));
 
         public ObservableCollection<Block> toolBoxItems { get; } = new()
         {
-            Block.Definitions[0],
-            Block.Definitions[1],
-            Block.Definitions[2],
-            Block.Definitions[3],
-            Block.Definitions[4],
-            Block.Definitions[5],
-            Block.Definitions[6],
-            Block.Definitions[7],
-            Block.Definitions[8],
-            Block.Definitions[9],
-            Block.Definitions[10],
-            Block.Definitions[11],
-            Block.Definitions[12],
-            Block.Definitions[13],
-            Block.Definitions[14],
-            Block.Definitions[15],
-            Block.Definitions[16],
-            Block.Definitions[17],
-            Block.Definitions[18],
-            Block.Definitions[19],
+            Block.Definitions[0], Block.Definitions[1], Block.Definitions[2], Block.Definitions[3],
+            Block.Definitions[4], Block.Definitions[5], Block.Definitions[6], Block.Definitions[7],
+            Block.Definitions[8], Block.Definitions[9], Block.Definitions[10], Block.Definitions[11],
+            Block.Definitions[12], Block.Definitions[13], Block.Definitions[14], Block.Definitions[15],
+            Block.Definitions[16], Block.Definitions[17], Block.Definitions[18], Block.Definitions[19],
         };
 
         public ReadOnlyReactiveCollection<Block> ToolBoxItems { get; }
+
+        public ObservableCollection<string> errorMessages { get; } = new();
+        public ReadOnlyReactiveCollection<string> ErrorMessages { get; }
+        public ReadOnlyReactivePropertySlim<bool> HasErrorMessages { get; }
 
         private void RaiseUpdateSuface()
         {
@@ -100,7 +80,7 @@ namespace Mine2DDesigner.ViewModels
         public ReactiveCommand SelectBlockCommand { get; set; }
 
         public DialogServiceCollection Services { get; } = new();
-                
+
         public MainWindowViewModel()
         {
             Directory.CreateDirectory(".\\data");
@@ -112,6 +92,20 @@ namespace Mine2DDesigner.ViewModels
                     settings = JsonSerializer.Deserialize<AppSettings>(settingsJson) ?? new AppSettings();
                 }
             }
+
+            ErrorMessages = errorMessages
+                .ToReadOnlyReactiveCollection()
+                .AddTo(disposables);
+            HasErrorMessages = ErrorMessages
+                .CollectionChangedAsObservable()
+                .Select(_ => errorMessages.Count > 0).ToReadOnlyReactivePropertySlim<bool>();
+            ClearErrorMessagesCommand = new ReactiveCommand()
+                .WithSubscribe(() =>
+                {
+                    errorMessages.Clear();
+                })
+                .AddTo(disposables);
+
             ToolBoxItems = toolBoxItems
                 .ToReadOnlyReactiveCollection()
                 .AddTo(disposables);
@@ -139,164 +133,134 @@ namespace Mine2DDesigner.ViewModels
             SelectBlockCommand = new ReactiveCommand()
                 .WithSubscribe(() =>
                 {
-                    if (SelectedBlockIndex.Value >= 0)
+                    try
                     {
-                        var saveIndex = SelectedBlockIndex.Value;
-                        var dialog = Services.Get<SelectBlockWindowViewModel>();
-                        var vm = new SelectBlockWindowViewModel(toolBoxItems[SelectedBlockIndex.Value]);
-
-                        if (dialog?.ShowDialog(vm) == true)
+                        if (SelectedBlockIndex.Value >= 0)
                         {
-                            toolBoxItems[SelectedBlockIndex.Value] = vm.SelectedBlock.Value;
-                            SelectedBlockIndex.Value = saveIndex;
+                            var saveIndex = SelectedBlockIndex.Value;
+                            var (isSelected, selectedBlock) = Services.SelectBlock(toolBoxItems[SelectedBlockIndex.Value]);
+                            if (isSelected)
+                            {
+                                toolBoxItems[SelectedBlockIndex.Value] = selectedBlock;
+                                SelectedBlockIndex.Value = saveIndex;
+                            }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessages.Add(ex.Message);
                     }
                 }).AddTo(disposables);
 
             KeyDownCommand = new ReactiveCommand<KeyEvent>();
-            InitKeyDownCommands();
-            
-            GetPlayerLocationCommand = new AsyncReactiveCommand();
-            SendBlocksCommand = new AsyncReactiveCommand();
-            InitRconCommands();
-
             SaveCommand = new AsyncReactiveCommand();
             SaveAsCommand = new AsyncReactiveCommand();
             OpenCommand = new AsyncReactiveCommand();
             NewCommand = new ReactiveCommand();
             SettingsCommand = new ReactiveCommand();
+            SendBlocksCommand= new ReactiveCommand();
+            InitKeyDownCommands();
             InitMenuCommands();
         }
-        private void InitRconCommands()
-        {
-            GetPlayerLocationCommand.Subscribe(async () =>
-            {
-                await Task.Run(() =>
-                {
-                    var minecraft = new MinecraftCommands(RconServer.Value, RconPort.Value, RconPassword.Value);
-                    StartX.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.X;
-                    StartY.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Y;
-                    StartZ.Value = (int)minecraft.GetPlayerData(PlayerId.Value).Postision.Z;
-                });
-            }).AddTo(disposables);
-
-            SendBlocksCommand.Subscribe(async () =>
-            {
-                await Task.Run(() =>
-                {
-                    var minecraft = new MinecraftCommands(RconServer.Value, RconPort.Value, RconPassword.Value);
-
-                    for (int y = 0; y < blockAria.Height; y++)
-                    {
-                        for (int z = 0; z < blockAria.Depth; z++)
-                        {
-                            for (int x = 0; x < blockAria.Width; x++)
-                            {
-                                var blockIndex = blockAria.GetBlock(x, y, z);
-                                if (!ReplaceAirBlocks.Value && blockIndex == 0)
-                                {
-                                    continue;
-                                }
-                                var blockName = Block.Definitions[blockIndex].Name;
-
-                                minecraft.SetBlock(StartX.Value + x, StartY.Value + y, StartZ.Value + z, blockName);
-                            }
-                        }
-                    }
-
-                });
-            }).AddTo(disposables);
-        }
+       
 
         private void InitMenuCommands()
         {
             SaveCommand.Subscribe(async () =>
             {
-                await Save(CurrentFileName);
-
+                try
+                {
+                    await DialogInvoker.Save(CurrentFileName, blockAria, toolBoxItems);
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
             }).AddTo(disposables);
 
             SaveAsCommand.Subscribe(async () =>
             {
-                var dialog = Services.Get<SaveFileDialogViewModel>();
-                if (dialog == null) { return; }
-                var vm = new SaveFileDialogViewModel()
+                try
                 {
-                    FileName = ProjectName.Value,
-                    InitialDirectory = Path.GetDirectoryName(CurrentFileName) ?? string.Empty
-                };
-                dialog.ShowDialog(vm);
-                CurrentFileName = vm.FileName;
-                ProjectName.Value = Path.GetFileNameWithoutExtension(vm.FileName);
-                await Save(CurrentFileName);
-
+                    CurrentFileName = await Services.SaveAs(CurrentFileName, blockAria, toolBoxItems);
+                    ProjectName.Value = Path.GetFileNameWithoutExtension(CurrentFileName);
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
             }).AddTo(disposables);
 
             OpenCommand.Subscribe(async () =>
             {
-                var dialog = Services.Get<OpenFileDialogViewModel>();
-                if (dialog == null) { return; }
-                var vm = new OpenFileDialogViewModel()
+                try
                 {
-                    InitialDirectory = Path.GetFullPath(".\\data")
-                };
-                if (dialog.ShowDialog(vm) != true) { return; }
-                using var stream = new FileStream(vm.FileName, FileMode.Open, FileAccess.Read);
-                var data = await System.Text.Json.JsonSerializer.DeserializeAsync<SaveData>(stream);
-                if (data is null) { return; }
-                if (data.ToolBoxItems is null) { return; }
+                    var (isOpened, fileName, data) = await Services.OpenFile();
+                    if (isOpened)
+                    {
+                        SetToolBoxItems(data);
+                        SetBlockAria(data.Width, data.Height, data.Depth, data.Aria);
+                        RaiseUpdateSuface();
+                        CurrentFileName = fileName;
+                        ProjectName.Value = Path.GetFileNameWithoutExtension(fileName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
+            }).AddTo(disposables);
 
+            NewCommand.Subscribe(() =>
+            {
+                try
+                {
+                    var (isCreated, name, width, height, depth)
+                        = Services.NewProject(blockAria.Width, blockAria.Height, blockAria.Depth);
+                    if (isCreated)
+                    {
+                        ProjectName.Value = name;
+                        CurrentFileName = Path.Combine(Path.GetDirectoryName(CurrentFileName) ?? "", name + ".json");
+                        SetBlockAria(width, height, depth);
+                        RaiseUpdateSuface();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
+            }).AddTo(disposables);
+
+            SettingsCommand.Subscribe(() =>
+            {
+                try
+                {
+                    Services.OpenSettings(settings);
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
+
+            }).AddTo(disposables);
+
+            SendBlocksCommand.Subscribe(() => 
+            {
+                Services.SendBlocks(settings, blockAria, errorMessages);
+            })
+            .AddTo(disposables);
+        }
+
+        private void SetToolBoxItems(SaveData data)
+        {
+            if (data.ToolBoxItems is not null)
+            {
                 toolBoxItems.Clear();
                 foreach (var item in data.ToolBoxItems)
                 {
                     toolBoxItems.Add(item);
                 }
-                SetBlockAria(data.Width, data.Height, data.Depth, data.Aria);
-                RaiseUpdateSuface();
-                CurrentFileName = vm.FileName;
-                ProjectName.Value = Path.GetFileNameWithoutExtension(vm.FileName);
-            }).AddTo(disposables);
-
-            NewCommand.Subscribe(() =>
-            {
-                var dialog = Services.Get<NewProjectWindowViewModel>();
-                var vm = new NewProjectWindowViewModel(blockAria.Width, blockAria.Height, blockAria.Depth);
-                dialog?.ShowDialog(vm);
-                ProjectName.Value = vm.Name.Value;
-                CurrentFileName = Path.Combine(
-                    Path.GetDirectoryName(CurrentFileName) ?? Path.GetFullPath(".\\data"),
-                    ProjectName.Value + ".json");
-                SetBlockAria(vm.Width.Value, vm.Height.Value, vm.Depth.Value);
-                RaiseUpdateSuface();
-            }).AddTo(disposables);
-
-            SettingsCommand.Subscribe(() =>
-            {
-                var dialog = Services.Get<SettingsWindowViewModel>();
-                var vm = new SettingsWindowViewModel(settings.Rcon.Server, settings.Rcon.Port, settings.Rcon.Password);
-                if (dialog?.ShowDialog(vm) == true)
-                {
-                    settings.Rcon.Server = vm.Server.Value;
-                    settings.Rcon.Port = vm.Port.Value;
-                    settings.Rcon.Password= vm.Password.Value;
-                    File.WriteAllText("appsettings.json", JsonSerializer.Serialize(settings));
-                }
-
-
-            }).AddTo(disposables);
-        }
-
-        private async Task Save(string fileName)
-        {
-            using var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
-            await System.Text.Json.JsonSerializer.SerializeAsync(stream, new SaveData
-            {
-                ToolBoxItems = toolBoxItems.ToList(),
-                Width = blockAria.Width,
-                Height = blockAria.Height,
-                Depth = blockAria.Depth,
-                Aria = (IList<ushort[]>)blockAria.Aria
-            });
+            }
         }
 
         private void SetBlockAria(int width, int height, int depth, IEnumerable<ushort[]>? aria = null)
@@ -312,127 +276,54 @@ namespace Mine2DDesigner.ViewModels
 
         private void InitKeyDownCommands()
         {
-            Action AfterAction(KeyEvent e) => () =>
-            {
-                if (e.IsPressedSpace)
-                {
-                    if (SelectedBlockIndex.Value >= 0)
-                    {
-                        blockAria.SetBlock(toolBoxItems[SelectedBlockIndex.Value].Index);
-                    }
-                }
-                RaiseUpdateSuface();
-            };
-
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Left)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.DecrementZ(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.DecrementZ(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.DecrementX(AfterAction(e));
-                            break;
-                    }
+                    MoveLeft(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Right)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.IncrementZ(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.IncrementZ(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.IncrementX(AfterAction(e));
-                            break;
-                    }
+                    MoveRight(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Up)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.IncrementX(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.IncrementY(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.IncrementY(AfterAction(e));
-                            break;
-                    }
+                    MoveUp(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Down)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.DecrementX(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.DecrementY(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.DecrementY(AfterAction(e));
-                            break;
-                    }
-
+                    Movedown(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.PageDown)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.DecrementY(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.DecrementX(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.DecrementZ(AfterAction(e));
-                            break;
-                    }
+                    PageDown(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.PageUp)
                 .Subscribe(e =>
                 {
-                    switch (ActivePlane.Value)
-                    {
-                        case PlaneType.ZX:
-                            blockAria.IncrementY(AfterAction(e));
-                            break;
-                        case PlaneType.ZY:
-                            blockAria.IncrementX(AfterAction(e));
-                            break;
-                        case PlaneType.XY:
-                            blockAria.IncrementZ(AfterAction(e));
-                            break;
-                    }
+                    PageUp(e);
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Space)
                 .Subscribe(_ =>
@@ -444,6 +335,7 @@ namespace Mine2DDesigner.ViewModels
                     RaiseUpdateSuface();
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                 .Where(e => e.KeyType == KeyType.Tab)
                 .Subscribe(_ =>
@@ -451,9 +343,9 @@ namespace Mine2DDesigner.ViewModels
                     ActivePlane.Value = (ActivePlane.Value == PlaneType.ZY)
                         ? PlaneType.ZX
                         : ActivePlane.Value + 1;
-
                 })
                 .AddTo(disposables);
+
             KeyDownCommand
                .Where(e => e.KeyType == KeyType.Num)
                .Subscribe(e =>
@@ -466,40 +358,25 @@ namespace Mine2DDesigner.ViewModels
                 .Where(e => e.KeyType == KeyType.ZoomIn)
                 .Subscribe(_ =>
                 {
+                    static double ZoomIn(double scale) => scale switch
+                    {
+                        0.5 => 0.75,
+                        0.75 => 1.0,
+                        1.0 => 1.5,
+                        1.5 => 1.75,
+                        1.75 => 2.0,
+                        _ => scale
+                    };
                     switch (ActivePlane.Value)
                     {
                         case PlaneType.ZX:
-                            ScaleZX.Value = ScaleZX.Value switch
-                            {
-                                0.5 => 0.75,
-                                0.75 => 1.0,
-                                1.0 => 1.5,
-                                1.5 => 1.75,
-                                1.75 => 2.0,
-                                _ => ScaleZX.Value
-                            };
+                            ScaleZX.Value = ZoomIn(ScaleZX.Value);
                             break;
                         case PlaneType.ZY:
-                            ScaleZY.Value = ScaleZY.Value switch
-                            {
-                                0.5 => 0.75,
-                                0.75 => 1.0,
-                                1.0 => 1.5,
-                                1.5 => 1.75,
-                                1.75 => 2.0,
-                                _ => ScaleZY.Value
-                            };
+                            ScaleZY.Value = ZoomIn(ScaleZY.Value);
                             break;
                         case PlaneType.XY:
-                            ScaleXY.Value = ScaleXY.Value switch
-                            {
-                                0.5 => 0.75,
-                                0.75 => 1.0,
-                                1.0 => 1.5,
-                                1.5 => 1.75,
-                                1.75 => 2.0,
-                                _ => ScaleXY.Value
-                            };
+                            ScaleXY.Value = ZoomIn(ScaleXY.Value);
                             break;
                     }
                 })
@@ -508,44 +385,137 @@ namespace Mine2DDesigner.ViewModels
                 .Where(e => e.KeyType == KeyType.ZoomOut)
                 .Subscribe(_ =>
                 {
+                    static double ZoomOut(double scale) => scale switch
+                    {
+                        2.0 => 1.75,
+                        1.75 => 1.5,
+                        1.5 => 1.0,
+                        1.0 => 0.75,
+                        0.75 => 0.5,
+                        _ => scale
+                    };
                     switch (ActivePlane.Value)
                     {
                         case PlaneType.ZX:
-                            ScaleZX.Value = ScaleZX.Value switch
-                            {
-                                2.0 => 1.75,
-                                1.75 => 1.5,
-                                1.5 => 1.0,
-                                1.0 => 0.75,
-                                0.75 => 0.5,
-                                _ => ScaleZX.Value
-                            };
+                            ScaleZX.Value = ZoomOut(ScaleZX.Value);
                             break;
                         case PlaneType.ZY:
-                            ScaleZY.Value = ScaleZY.Value switch
-                            {
-                                2.0 => 1.75,
-                                1.75 => 1.5,
-                                1.5 => 1.0,
-                                1.0 => 0.75,
-                                0.75 => 0.5,
-                                _ => ScaleZY.Value
-                            };
+                            ScaleZY.Value = ZoomOut(ScaleZY.Value);
                             break;
                         case PlaneType.XY:
-                            ScaleXY.Value = ScaleXY.Value switch
-                            {
-                                2.0 => 1.75,
-                                1.75 => 1.5,
-                                1.5 => 1.0,
-                                1.0 => 0.75,
-                                0.75 => 0.5,
-                                _ => ScaleXY.Value
-                            };
+                            ScaleXY.Value = ZoomOut(ScaleXY.Value);
                             break;
                     }
                 })
                 .AddTo(disposables);
+        }
+
+        private Action AfterAction(KeyEvent e) => () =>
+        {
+            if (e.IsPressedSpace)
+            {
+                if (SelectedBlockIndex.Value >= 0)
+                {
+                    blockAria.SetBlock(toolBoxItems[SelectedBlockIndex.Value].Index);
+                }
+            }
+            RaiseUpdateSuface();
+        };
+
+        private void MoveLeft(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.DecrementZ(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.DecrementZ(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.DecrementX(AfterAction(e));
+                    break;
+            }
+        }
+
+        private void MoveRight(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.IncrementZ(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.IncrementZ(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.IncrementX(AfterAction(e));
+                    break;
+            }
+        }
+
+        private void MoveUp(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.IncrementX(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.IncrementY(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.IncrementY(AfterAction(e));
+                    break;
+            }
+        }
+
+        private void Movedown(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.DecrementX(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.DecrementY(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.DecrementY(AfterAction(e));
+                    break;
+            }
+        }
+
+        private void PageDown(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.DecrementY(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.DecrementX(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.DecrementZ(AfterAction(e));
+                    break;
+            }
+        }
+
+        private void PageUp(KeyEvent e)
+        {
+            switch (ActivePlane.Value)
+            {
+                case PlaneType.ZX:
+                    blockAria.IncrementY(AfterAction(e));
+                    break;
+                case PlaneType.ZY:
+                    blockAria.IncrementX(AfterAction(e));
+                    break;
+                case PlaneType.XY:
+                    blockAria.IncrementZ(AfterAction(e));
+                    break;
+            }
         }
 
         public void Dispose()
@@ -573,7 +543,5 @@ namespace Mine2DDesigner.ViewModels
             Services.Add(service);
         }
     }
-
-
 
 }

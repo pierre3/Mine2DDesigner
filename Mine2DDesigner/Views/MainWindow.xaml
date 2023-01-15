@@ -10,12 +10,13 @@
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
         mc:Ignorable="d"
-        Title="Mine 2D Designer" Height="1024" Width="1024">
+        Title="Mine 2D Designer" Height="920" Width="1024">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
     <Window.Resources>
         <bind:PlaneTypeToBorderBrushConverter x:Key="borderBrushConverter"/>
+        <bind:BooleanToVisibilityConverter x:Key="visibilityConverter"/>
     </Window.Resources>
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="PreviewKeyDown">
@@ -24,12 +25,12 @@
             </rp:EventToReactiveCommand>
         </behaviors:EventTrigger>
     </behaviors:Interaction.Triggers>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="50*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50*"/>
@@ -47,7 +48,7 @@
                           VerticalAlignment="Stretch"
                           ShowsPreview="true"
                           Background="DarkSlateGray"></GridSplitter>
-        <Border Grid.Row="0" Grid.Column="0" 
+        <Border Grid.Row="0" Grid.Column="0"
                     BorderBrush="{Binding ActivePlane.Value, Converter={StaticResource borderBrushConverter}, ConverterParameter=ZX}"
                     BorderThickness="2">
             <ScrollViewer 
@@ -98,11 +99,10 @@
                 </sk:SKElement>
             </ScrollViewer>
         </Border>
-        <TabControl Grid.Row="3" Grid.Column="3" Margin="8">
+        <TabControl Grid.Row="2" Grid.Column="3" Margin="8">
             <TabItem Header="{Binding ProjectName.Value}">
                 <Grid >
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
@@ -112,7 +112,10 @@
                         <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Open" Command="{Binding OpenCommand}">&#xE8E5;</Button>
                         <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Save" Command="{Binding SaveCommand}">&#xE74E;</Button>
                         <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Save As" Command="{Binding SaveAsCommand}">&#xE792;</Button>
+                        <Separator/>
+                        <Label>Send Blocks:&#x0020;</Label>
                         <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Rcon Settings" Command="{Binding SettingsCommand}">&#xE713;</Button>
+                        <Button FontFamily="Segoe MDL2 Assets" FontSize="24" ToolTip="Send Blocks" Command="{Binding SendBlocksCommand}">&#xE724;</Button>
                     </ToolBar>
 
                     <StackPanel Grid.Row="1" Margin="8" Orientation="Horizontal">
@@ -142,39 +145,14 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                    <GroupBox Margin="8" Grid.Row="3" Header="Send Block Settings">
-                        <Grid >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Row="0" Grid.Column="0">Start Pos.</Label>
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="4" Orientation="Horizontal">
-                                <Label Padding="2" Margin="4,0,0,0">X</Label>
-                                <TextBox Padding="2" Margin="2,0" Width="60" Text="{Binding StartX.Value}"/>
-                                <Label Padding="2" Margin="4,0,0,0">Y</Label>
-                                <TextBox Padding="2" Margin="2,0" Width="60" Text="{Binding StartY.Value}"/>
-                                <Label Padding="2" Margin="4,0,0,0">Z</Label>
-                                <TextBox Padding="2" Margin="2,0" Width="60" Text="{Binding StartZ.Value}"/>
-                            </StackPanel>
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" Orientation="Horizontal">
-                                <Button Margin="4,0" Padding="10,2" Command="{Binding GetPlayerLocationCommand}">Get Player Location</Button>
-                                <Label Padding="2" Margin="4,0,0,0">Player ID</Label>
-                                <TextBox Padding="2" Margin="2,0" Width="100" Text="{Binding PlayerId.Value}"/>
-                            </StackPanel>
-                            <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="2" Margin="8,4" IsChecked="{Binding ReplaceAirBlocks.Value}">Replace Air Blocks</CheckBox>
-                            <Button Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Padding="10,2" 
-                            Command="{Binding SendBlocksCommand}">Send Blocks</Button>
-                        </Grid>
-                    </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>
+        <Border Grid.Row="3" Grid.ColumnSpan="3" Visibility="{Binding HasErrorMessages.Value,Converter={StaticResource visibilityConverter}}" BorderThickness="2" BorderBrush="Red">
+            <StackPanel>
+                <Button HorizontalAlignment="Right" FontFamily="Segoe MDL2 Assets" Command="{Binding ClearErrorMessagesCommand}">&#xE711;</Button>
+                <ListBox ItemsSource="{Binding ErrorMessages}"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

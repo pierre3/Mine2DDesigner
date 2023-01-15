@@ -6,10 +6,13 @@ It displays a 3D space as a three-way section to assist in the placement of bloc
 - Windows 10/11
 - .NET6.0
 
-## Utilized Frameworks and Libraries
+## Dependencies
 - [Windows Presentation Foundation (WPF)](https://github.com/dotnet/wpf)
+- [ReactiveProperty](https://github.com/runceel/ReactiveProperty)
 - [SkiaSharp](https://github.com/mono/SkiaSharp)
 - [MinecraftConnection](https://github.com/takunology/MinecraftConnection)
+
+## Overview
 
 <img width="759" alt="image" src="https://user-images.githubusercontent.com/1255359/211190050-f6b34dfa-1668-40e2-b852-61e2133588ed.png">
 
