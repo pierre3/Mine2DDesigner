@@ -33,12 +33,13 @@ namespace Mine2DDesigner.Views
             }
             if (DataContext is IDialogServiceProvider serviceProvider)
             {
-                serviceProvider.AddService(new SelectBlockWindowService(this));
-                serviceProvider.AddService(new NewProjectWindowService(this));
-                serviceProvider.AddService(new OpenFileDialogService(this));
-                serviceProvider.AddService(new SaveFileDialogService(this));
-                serviceProvider.AddService(new SettingsWindowService(this));
-                serviceProvider.AddService(new SendBlocksWindowService(this));
+                serviceProvider
+                    .AddService(new SelectBlockWindowService(this))
+                    .AddService(new NewProjectWindowService(this))
+                    .AddService(new OpenFileDialogService(this))
+                    .AddService(new SaveFileDialogService(this))
+                    .AddService(new SettingsWindowService(this))
+                    .AddService(new SendBlocksWindowService(this));
             }
         }
 

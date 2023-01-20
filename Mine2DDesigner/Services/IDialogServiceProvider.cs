@@ -5,6 +5,6 @@ namespace Mine2DDesigner.Services
     public interface IDialogServiceProvider
     {
         DialogServiceCollection Services { get; }
-        void AddService(IDialogService service);
+        IDialogServiceProvider AddService(IDialogService service);
     }
 }

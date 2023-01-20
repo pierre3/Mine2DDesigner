@@ -538,9 +538,10 @@ namespace Mine2DDesigner.ViewModels
             blockAria.PaintZY(g);
         }
 
-        public void AddService(IDialogService service)
+        public IDialogServiceProvider AddService(IDialogService service)
         {
             Services.Add(service);
+            return this;
         }
     }
 
