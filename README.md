@@ -20,7 +20,7 @@ https://github.com/pierre3/Mine2DDesigner/releases
 
 ## Usage
 
-###　Running the application
+### Running the application
 
 Run the Mine2DDesigner.exe located in the unzipped folder.
 
