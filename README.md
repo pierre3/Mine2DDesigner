@@ -2,6 +2,9 @@
 This is a tool for designing block placement in Minecraft. (for Java Edition)
 It displays a 3D space as a three-way section to assist in the placement of blocks.The designed blocks are placed on the Minecraft space via a remote console (RCON).
 
+![Mine2DDesaignerDemo.gif](./images/Mine2DDesaignerDemo.gif)
+![Mine2DDesaignerDemo2.gif](./images/Mine2DDesaignerDemo2.gif)
+
 ## Requirements
 - Minecraft Java Edition 1.19 or newer
 - Windows 10/11
