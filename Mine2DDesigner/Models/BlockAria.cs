@@ -13,6 +13,8 @@ namespace Mine2DDesigner.Models
         public int Height { get; }
         public int Depth { get; }
 
+        public PaintAria PaintAria { get; } = new PaintAria();
+
         private ushort currentX = 0;
         private ushort currentY = 0;
         private ushort currentZ = 0;
@@ -35,14 +37,45 @@ namespace Mine2DDesigner.Models
             }
         }
 
+        public void StartPaintMode(PaintMode paintMode, FillMode fillMode)
+        {
+            if (PaintAria.PaintMode == PaintMode.None)
+            {
+                PaintAria.Start = new Point3i(currentX, currentY, currentZ);
+                PaintAria.End = new Point3i(currentX, currentY, currentZ);
+            }
+            PaintAria.FillMode = fillMode;
+            PaintAria.PaintMode = paintMode;
+        }
+
+        public void SetPaintEnd()
+        {
+            if (PaintAria.PaintMode != PaintMode.None)
+            {
+                PaintAria.End = new Point3i(currentX, currentY, currentZ);
+            }
+        }
+
+        public void ApplyPaintArea(ushort value)
+        {
+            foreach(var aria in PaintAria.GetPaintArea())
+            {
+                SetBlock(aria.X, aria.Y, aria.Z, value);
+            }
+            PaintAria.PaintMode= PaintMode.None;
+        }
+
         public void SetBlock(ushort value)
         {
-            SetBlock(currentX, currentY, currentZ, value);
+            SetBlock(currentX, currentY, currentZ, 
+                GetBlock(currentX, currentY, currentX) == value 
+                    ? (ushort)0 
+                    : value);
         }
 
         public void SetBlock(int x, int y, int z, ushort value)
         {
-            aria[y][x * Depth + z] = GetBlock(x, y, z) == value ? (ushort)0 : value;
+            aria[y][x * Depth + z] = value;
         }
 
         public ushort GetBlock(int x, int y, int z) => aria[y][x * Depth + z];
@@ -73,6 +106,7 @@ namespace Mine2DDesigner.Models
             if (currentX < Width - 1)
             {
                 currentX++;
+                SetPaintEnd();
                 afterAction?.Invoke();
             }
         }
@@ -82,6 +116,7 @@ namespace Mine2DDesigner.Models
             if (currentX > 0)
             {
                 currentX--;
+                SetPaintEnd();
                 afterAction?.Invoke();
 
             }
@@ -92,6 +127,7 @@ namespace Mine2DDesigner.Models
             if (currentY < Height - 1)
             {
                 currentY++;
+                SetPaintEnd();
                 afterAction?.Invoke();
             }
         }
@@ -101,6 +137,7 @@ namespace Mine2DDesigner.Models
             if (currentY > 0)
             {
                 currentY--;
+                SetPaintEnd();
                 afterAction?.Invoke();
             }
         }
@@ -110,6 +147,7 @@ namespace Mine2DDesigner.Models
             if (currentZ < Depth - 1)
             {
                 currentZ++;
+                SetPaintEnd();
                 afterAction?.Invoke();
             }
         }
@@ -119,26 +157,37 @@ namespace Mine2DDesigner.Models
             if (currentZ > 0)
             {
                 currentZ--;
+                SetPaintEnd();
                 afterAction?.Invoke();
             }
         }
 
         private void DrawImageZX(IGraphics g, int y)
         {
+            var paintAria = PaintAria.GetPaintArea();
             for (int x = 0; x < Width; x++)
             {
                 for (int z = 0; z < Depth; z++)
                 {
                     var block = GetBlock(x, y, z);
+                    var rect = new Rectangle(
+                        z * BlockSize,
+                        (Width - 1 - x) * BlockSize,
+                        BlockSize,
+                        BlockSize);
                     if (block != 0)
                     {
                         g.DrawImage(
-                            new Rectangle(
-                                z * BlockSize,
-                                (Width - 1 - x) * BlockSize,
-                                BlockSize,
-                                BlockSize),
+                            rect,
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Top));
+                    }
+                    if (paintAria.Contains(new Point3i(x, y, z)))
+                    {
+                        var alpha = (byte)255;// PaintAria.Start == new Point3i(x, y, z) ? (byte)128 : (byte)64;
+                        var col = PaintAria.FillMode == FillMode.Fill
+                            ? new Color(0, 255, 255, alpha)
+                            : new Color(255, 0, 255, alpha);
+                        g.FillRectangle(rect, new Fill(col));
                     }
                 }
             }
@@ -146,20 +195,30 @@ namespace Mine2DDesigner.Models
 
         private void DrawImageXY(IGraphics g, int z)
         {
+            var paintAria = PaintAria.GetPaintArea();
             for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)
                 {
                     var block = GetBlock(x, y, z);
+                    var rect = new Rectangle(
+                        x * BlockSize,
+                        (Height - 1 - y) * BlockSize,
+                        BlockSize,
+                        BlockSize);
                     if (block != 0)
                     {
                         g.DrawImage(
-                            new Rectangle(
-                                x * BlockSize,
-                                (Height - 1 - y) * BlockSize,
-                                BlockSize,
-                                BlockSize),
+                            rect,
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
+                    }
+                    if (paintAria.Contains(new Point3i(x, y, z)))
+                    {
+                        var alpha = (byte)255;// PaintAria.Start == new Point3i(x, y, z) ? (byte)128 : (byte)64;
+                        var col = PaintAria.FillMode == FillMode.Fill
+                            ? new Color(0, 255, 255, alpha)
+                            : new Color(255, 0, 255, alpha);
+                        g.FillRectangle(rect, new Fill(col));
                     }
                 }
             }
@@ -167,20 +226,30 @@ namespace Mine2DDesigner.Models
 
         private void DrawImageZY(IGraphics g, int x)
         {
+            var paintAria = PaintAria.GetPaintArea();
             for (int y = 0; y < Height; y++)
             {
                 for (int z = 0; z < Width; z++)
                 {
                     var block = GetBlock(x, y, z);
+                    var rect = new Rectangle(
+                        z * BlockSize,
+                        (Height - 1 - y) * BlockSize,
+                        BlockSize,
+                        BlockSize);
                     if (block != 0)
                     {
                         g.DrawImage(
-                            new Rectangle(
-                                z * BlockSize,
-                                (Height - 1 - y) * BlockSize,
-                                BlockSize,
-                                BlockSize),
+                            rect,
                             Block.Definitions[block].Textures.GetTextureBytes(TextureType.Side));
+                    }
+                    if (paintAria.Contains(new Point3i(x, y, z)))
+                    {
+                        var alpha = (byte)255;// PaintAria.Start == new Point3i(x, y, z) ? (byte)128 : (byte)64;
+                        var col = PaintAria.FillMode == FillMode.Fill
+                            ? new Color(0, 255, 255, alpha)
+                            : new Color(255, 0, 255, alpha);
+                        g.FillRectangle(rect, new Fill(col));
                     }
                 }
             }

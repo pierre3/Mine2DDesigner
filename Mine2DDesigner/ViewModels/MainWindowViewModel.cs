@@ -41,11 +41,11 @@ namespace Mine2DDesigner.ViewModels
         public ReactivePropertySlim<int> HeightZY { get; } = new(BlockAria.BlockSize * 25);
         public ReactivePropertySlim<int> HeightXY { get; } = new(BlockAria.BlockSize * 25);
 
-        
+
         public ReactivePropertySlim<string> ProjectName { get; } = new("untitled");
         public ReactivePropertySlim<int> SelectedBlockIndex { get; }
         public ReactivePropertySlim<Block> SelectedBlock { get; }
-        
+
         public AsyncReactiveCommand SaveCommand { get; }
         public AsyncReactiveCommand SaveAsCommand { get; }
         public AsyncReactiveCommand OpenCommand { get; }
@@ -158,11 +158,11 @@ namespace Mine2DDesigner.ViewModels
             OpenCommand = new AsyncReactiveCommand();
             NewCommand = new ReactiveCommand();
             SettingsCommand = new ReactiveCommand();
-            SendBlocksCommand= new ReactiveCommand();
+            SendBlocksCommand = new ReactiveCommand();
             InitKeyDownCommands();
             InitMenuCommands();
         }
-       
+
 
         private void InitMenuCommands()
         {
@@ -244,7 +244,7 @@ namespace Mine2DDesigner.ViewModels
 
             }).AddTo(disposables);
 
-            SendBlocksCommand.Subscribe(() => 
+            SendBlocksCommand.Subscribe(() =>
             {
                 Services.SendBlocks(settings, blockAria, errorMessages);
             })
@@ -330,7 +330,14 @@ namespace Mine2DDesigner.ViewModels
                 {
                     if (SelectedBlockIndex.Value >= 0)
                     {
-                        blockAria.SetBlock(toolBoxItems[SelectedBlockIndex.Value].Index);
+                        if (blockAria.PaintAria.PaintMode != PaintMode.None)
+                        {
+                            blockAria.ApplyPaintArea(toolBoxItems[SelectedBlockIndex.Value].Index);
+                        }
+                        else
+                        {
+                            blockAria.SetBlock(toolBoxItems[SelectedBlockIndex.Value].Index);
+                        }
                     }
                     RaiseUpdateSuface();
                 })
@@ -351,6 +358,48 @@ namespace Mine2DDesigner.ViewModels
                .Subscribe(e =>
                {
                    SelectedBlockIndex.Value = e.NumKey;
+               })
+               .AddTo(disposables);
+
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.F1)
+               .Subscribe(e =>
+               {
+                   blockAria.StartPaintMode(PaintMode.Cube, FillMode.Fill);
+                   RaiseUpdateSuface();
+
+               })
+               .AddTo(disposables);
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.F2)
+               .Subscribe(e =>
+               {
+                   blockAria.StartPaintMode(PaintMode.Cube, FillMode.Surface);
+                   RaiseUpdateSuface();
+               })
+               .AddTo(disposables);
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.F3)
+               .Subscribe(e =>
+               {
+                   blockAria.StartPaintMode(PaintMode.Ball, FillMode.Fill);
+                   RaiseUpdateSuface();
+               })
+               .AddTo(disposables);
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.F4)
+               .Subscribe(e =>
+               {
+                   blockAria.StartPaintMode(PaintMode.Ball, FillMode.Surface);
+                   RaiseUpdateSuface();
+               })
+               .AddTo(disposables);
+            KeyDownCommand
+               .Where(e => e.KeyType == KeyType.Escape)
+               .Subscribe(e =>
+               {
+                   blockAria.StartPaintMode(PaintMode.None, FillMode.Fill);
+                   RaiseUpdateSuface();
                })
                .AddTo(disposables);
 

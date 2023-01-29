@@ -30,6 +30,11 @@ namespace Mine2DDesigner.Bindings
                         Key.Tab => KeyType.Tab,
                         Key.Z => KeyType.ZoomIn,
                         Key.X => KeyType.ZoomOut,
+                        Key.F1=> KeyType.F1,
+                        Key.F2=> KeyType.F2,
+                        Key.F3=> KeyType.F3,
+                        Key.F4=> KeyType.F4,
+                        Key.Escape=> KeyType.Escape,
                         Key _key when
                             (_key >= Key.D0 && _key <= Key.D9)
                             || (_key >= Key.NumPad0 && _key <= Key.NumPad9) => KeyType.Num,

@@ -14,22 +14,11 @@ namespace Mine2DDesigner.Models
             var topFileName = Path.GetFullPath(Path.Combine("assets", "block", name + "_top.png"));
             var sideFileName = Path.GetFullPath(Path.Combine("assets", "block", name + "_side.png"));
 
-            if (File.Exists(topFileName) && File.Exists(sideFileName))
-            {
-                Top = topFileName;
-                Side = sideFileName;
-            }
-            else if (File.Exists(topFileName) && File.Exists(fileName))
-            {
-                Top = topFileName;
-                Side = fileName;
-            }
-            else if (File.Exists(fileName))
-            {
-                Top = fileName;
-                Side = fileName;
-            }
-            else
+            var common = File.Exists(fileName) ? fileName : null;
+            Top = File.Exists(topFileName)? topFileName: common;
+            Side = File.Exists(sideFileName) ? sideFileName : common;
+            
+            if(Top is null || Side is null)
             {
                 throw new FileNotFoundException($"{name} texture is not found.");
             }
