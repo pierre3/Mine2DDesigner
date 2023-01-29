@@ -14,7 +14,7 @@ namespace Mine2DDesigner.Models
         public int Depth { get; }
 
         public PaintAria PaintAria { get; } = new PaintAria();
-
+        private bool isPaintPreview = false;
         private ushort currentX = 0;
         private ushort currentY = 0;
         private ushort currentZ = 0;
@@ -43,14 +43,20 @@ namespace Mine2DDesigner.Models
             {
                 PaintAria.Start = new Point3i(currentX, currentY, currentZ);
                 PaintAria.End = new Point3i(currentX, currentY, currentZ);
+                isPaintPreview = false;
             }
             PaintAria.FillMode = fillMode;
             PaintAria.PaintMode = paintMode;
         }
 
+        public void SetPreview()
+        {
+            isPaintPreview = !isPaintPreview;
+        }
+
         public void SetPaintEnd()
         {
-            if (PaintAria.PaintMode != PaintMode.None)
+            if (PaintAria.PaintMode != PaintMode.None && !isPaintPreview)
             {
                 PaintAria.End = new Point3i(currentX, currentY, currentZ);
             }
@@ -63,6 +69,7 @@ namespace Mine2DDesigner.Models
                 SetBlock(aria.X, aria.Y, aria.Z, value);
             }
             PaintAria.PaintMode= PaintMode.None;
+            isPaintPreview= false;
         }
 
         public void SetBlock(ushort value)

@@ -395,6 +395,13 @@ namespace Mine2DDesigner.ViewModels
                })
                .AddTo(disposables);
             KeyDownCommand
+               .Where(e => e.KeyType == KeyType.Enter)
+               .Subscribe(e =>
+               {
+                   blockAria.SetPreview();
+               })
+               .AddTo(disposables);
+            KeyDownCommand
                .Where(e => e.KeyType == KeyType.Escape)
                .Subscribe(e =>
                {

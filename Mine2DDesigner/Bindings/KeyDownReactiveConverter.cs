@@ -35,6 +35,7 @@ namespace Mine2DDesigner.Bindings
                         Key.F3=> KeyType.F3,
                         Key.F4=> KeyType.F4,
                         Key.Escape=> KeyType.Escape,
+                        Key.Enter=> KeyType.Enter,
                         Key _key when
                             (_key >= Key.D0 && _key <= Key.D9)
                             || (_key >= Key.NumPad0 && _key <= Key.NumPad9) => KeyType.Num,

@@ -12,7 +12,6 @@ namespace Mine2DDesigner.Models
         public Point3i End { get; set; }
         public PaintMode PaintMode { get; set; } = PaintMode.None;
         public FillMode FillMode { get; set; } = FillMode.Fill;
-
         public IList<Point3i> GetPaintArea()
         {
             switch (PaintMode)

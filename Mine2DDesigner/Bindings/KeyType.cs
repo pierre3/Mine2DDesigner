@@ -18,6 +18,7 @@
         F2,
         F3,
         F4,
-        Escape
+        Escape,
+        Enter
     }
 }
