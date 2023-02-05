@@ -75,7 +75,7 @@ namespace Mine2DDesigner.Models
         public void SetBlock(ushort value)
         {
             SetBlock(currentX, currentY, currentZ, 
-                GetBlock(currentX, currentY, currentX) == value 
+                GetBlock(currentX, currentY, currentZ) == value 
                     ? (ushort)0 
                     : value);
         }
