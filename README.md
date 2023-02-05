@@ -97,12 +97,43 @@ Block placement operations are done using the keyboard.
 |X|Zoom out on the active frame's image|
 |Tab|Change the active frame|
 |0-9|Switch the block to be placed. Numbers 0-9 are assigned in order from the left of the block list.|
+|F1|Starts figure mode in rectangular mode, or changes to rectangular mode.|
+|F2|Starts figure mode in rectangular surface mode, or changes to rectangular surface mode.|
+|F3|Starts figure mode in ellipsoid mode, or changes to ellipsoid mode.|
+|F4|Starts figure mode in ellipsoid surface mode, or changes to ellipsoid surface mode.|
+|Enter|Fix the figure mode area.|
+|Escape|Cancel figure mode.|
 
+#### Figure mode operation
 
+To place blocks in simple shapes like a cube or an ellipsoid, follow these steps:
 
-## Sending the designed blocks to Minecraft
+![figure.png](./images/figure.png)
 
-### Setting up Rcon
+|Figure mode|Key|Description|
+|--|--|--|
+|Rectangular mode|F1|Fill the interior of the specified rectangle with the specified block.|
+|Rectangular surface mode|F2|Place blocks on the surface of the specified rectangle.|
+|Ellipsoid mode|F3|Fill the interior of the ellipsoid inscribed within the specified rectangle with the specified block.|
+|Ellipsoid surface mode|F4|Place blocks on the surface of the ellipsoid inscribed within the specified rectangle.|
+
+1. Move the cursor to the starting point of the area to be specified.  
+2. Press F1-F4 to start the figure mode.  
+3. Move the cursor to the end point of the area to be specified. (At this time, the rectangular area will be filled and displayed.)  
+4. Press Enter to confirm the area. (At this point, the blocks are not yet placed.)  
+5. You can now move the cursor to see where the blocks will be placed.  
+6. Press Space to place the blocks. The blocks placed will be the one selected in the block list.  
+
+> **Note**
+> Before pressing the Space key to place the blocks, you can:
+> - Press Escape to exit the figure mode.
+> - Press F1-F4 to change the type of shape to be placed.
+
+![Mine2DDesaignerFigureMode.gif(./images/Mine2DDesaignerFigureMode.gif)
+
+### Sending the designed blocks to Minecraft
+
+#### Setting up Rcon
 
 
 1. Click the "Rcon Settings" button on the toolbar to open the settings dialog.
@@ -119,7 +150,7 @@ Block placement operations are done using the keyboard.
 
 2. Click the "OK" button to close the dialog after inputting the values.
 
-### Sending blocks
+#### Sending blocks
 
 2. Click the "Send Blocks" button on the toolbar to open the settings dialog.
    
@@ -137,7 +168,7 @@ Block placement operations are done using the keyboard.
 |Send Blocks|Executes the block placement command|
 
 
-## Saving the project
+### Saving the project
 
 Save the current state to a file.
 
@@ -145,13 +176,13 @@ Save the current state to a file.
 - Placed blocks
 - State of the block list
 
-### Saving with a specified file name
+#### Saving with a specified file name
 
 Click the "Save as" button on the toolbar to open the "Save As" dialog.
 
 ![save-as.png](./images/save-as.png)
 
-### Overwriting save
+#### Overwriting save
 
 When you click the "Save" button on the toolbar, it will save over an existing file.
 
