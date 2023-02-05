@@ -106,7 +106,7 @@ Block placement operations are done using the keyboard.
 
 #### Figure mode operation
 
-To place blocks in simple shapes like a cube or an ellipsoid, follow these steps:
+It is possible to place blocks on simple shapes such as cubes and ellipsoids.
 
 ![figure.png](./images/figure.png)
 
@@ -117,6 +117,8 @@ To place blocks in simple shapes like a cube or an ellipsoid, follow these steps
 |Ellipsoid mode|F3|Fill the interior of the ellipsoid inscribed within the specified rectangle with the specified block.|
 |Ellipsoid surface mode|F4|Place blocks on the surface of the ellipsoid inscribed within the specified rectangle.|
 
+
+To place blocks in simple shapes like a cube or an ellipsoid, follow these steps:
 1. Move the cursor to the starting point of the area to be specified.  
 2. Press F1-F4 to start the figure mode.  
 3. Move the cursor to the end point of the area to be specified. (At this time, the rectangular area will be filled and displayed.)  
