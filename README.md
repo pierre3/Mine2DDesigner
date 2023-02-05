@@ -108,6 +108,8 @@ Block placement operations are done using the keyboard.
 
 It is possible to place blocks on simple shapes such as cubes and ellipsoids.
 
+![Mine2DDesaignerFigureMode.gif](./images/Mine2DDesaignerFigureMode.gif)
+
 ![figure.png](./images/figure.png)
 
 |Figure mode|Key|Description|
@@ -116,7 +118,6 @@ It is possible to place blocks on simple shapes such as cubes and ellipsoids.
 |Rectangular surface mode|F2|Place blocks on the surface of the specified rectangle.|
 |Ellipsoid mode|F3|Fill the interior of the ellipsoid inscribed within the specified rectangle with the specified block.|
 |Ellipsoid surface mode|F4|Place blocks on the surface of the ellipsoid inscribed within the specified rectangle.|
-
 
 To place blocks in simple shapes like a cube or an ellipsoid, follow these steps:
 1. Move the cursor to the starting point of the area to be specified.  
@@ -130,8 +131,6 @@ To place blocks in simple shapes like a cube or an ellipsoid, follow these steps
 > Before pressing the Space key to place the blocks, you can:
 > - Press Escape to exit the figure mode.
 > - Press F1-F4 to change the type of shape to be placed.
-
-![Mine2DDesaignerFigureMode.gif](./images/Mine2DDesaignerFigureMode.gif)
 
 ### Sending the designed blocks to Minecraft
 
