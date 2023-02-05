@@ -131,7 +131,7 @@ To place blocks in simple shapes like a cube or an ellipsoid, follow these steps
 > - Press Escape to exit the figure mode.
 > - Press F1-F4 to change the type of shape to be placed.
 
-![Mine2DDesaignerFigureMode.gif(./images/Mine2DDesaignerFigureMode.gif)
+![Mine2DDesaignerFigureMode.gif](./images/Mine2DDesaignerFigureMode.gif)
 
 ### Sending the designed blocks to Minecraft
 
